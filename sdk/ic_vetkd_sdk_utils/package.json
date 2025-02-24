@@ -8,6 +8,7 @@
     "typings": "dist/types/index.d.ts",
     "dependencies": {
         "@noble/curves": "^1.8.1",
+        "@noble/hashes": "^1.7.1",
         "typescript": "^5.7.3"
     },
     "devDependencies": {

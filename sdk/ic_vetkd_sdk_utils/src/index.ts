@@ -2,6 +2,7 @@ import { bls12_381 } from '@noble/curves/bls12-381';
 import { ProjPointType } from '@noble/curves/abstract/weierstrass';
 import { Fp, Fp2 } from '@noble/curves/abstract/tower';
 import { expand_message_xmd, hash_to_field } from '@noble/curves/abstract/hash-to-curve';
+import { shake256 } from '@noble/hashes/sha3';
 
 export type G1Point = ProjPointType<Fp>;
 export type G2Point = ProjPointType<Fp2>;
@@ -14,7 +15,7 @@ const G2_BYTES = 96;
  *
  * Applications using VetKD create an ephemeral transport secret key and send
  * the public key to the IC as part of their VetKD request. The returned VetKey
- * is encrypted, and can only be encrypted using the transport secret key.
+ * is encrypted, and can only be decrypted using the transport secret key.
  */
 export class TransportSecretKey {
     readonly #sk: Uint8Array;
@@ -29,7 +30,7 @@ export class TransportSecretKey {
      * For most applications, prefer using the static method random
      */
     constructor(sk: Uint8Array) {
-        if(sk.length != 32) {
+        if(sk.length !== 32) {
             throw new Error("Invalid size for transport secret key");
         }
 
@@ -64,6 +65,12 @@ export class TransportSecretKey {
     }
 }
 
+/**
+ * VetKD derived public key
+ *
+ * An unencrypted VetKey is a BLS signature generated with a canister-specific
+ * key. This type represents such keys.
+ */
 export class DerivedPublicKey {
     readonly #pk: G2Point;
 
@@ -120,7 +127,7 @@ export function hashToScalar(input: Uint8Array, domainSep: string): bigint {
 }
 
 /**
- * Derive a symmetric key from the provided input
+ * @internal derive a symmetric key from the provided input
  *
  * The `input` parameter should be a sufficiently long random input.
  *
@@ -139,7 +146,7 @@ export function deriveSymmetricKey(input: Uint8Array, domainSep: string, outputL
 }
 
 /**
- * Hash a derived public key plus a message into the BLS12-381 G1 group
+ * @internal hash a derived public key plus a message into the BLS12-381 G1 group
  *
  * This is not normally needed by applications using VetKD.
  */
@@ -196,18 +203,6 @@ export class VetKey {
     }
 
     /**
-     * Derive a BLS12-381 secret key from the VetKey
-     *
-     * The `domainSep` parameter should be a string unique to your application and
-     * also your usage of the resulting key. For example say your application
-     * "my-app" is deriving two keys, one for usage "foo" and the other for
-     * "bar". You might use as domain separators "my-app-foo" and "my-app-bar".
-     */
-    deriveBls12381SecretKey(domainSep: string) {
-        return hashToScalar(this.#bytes, domainSep);
-    }
-
-    /**
      * @internal getter returning the point object of the VetKey
      *
      * Applications would not usually need to call this
@@ -238,7 +233,7 @@ export class EncryptedKey {
      * managment canister interface
      */
     constructor(bytes: Uint8Array) {
-        if(bytes.length != G1_BYTES + G2_BYTES + G1_BYTES) {
+        if(bytes.length !== G1_BYTES + G2_BYTES + G1_BYTES) {
             throw new Error("Invalid EncryptedKey serialization");
         }
 
@@ -250,7 +245,7 @@ export class EncryptedKey {
     /**
      * Decrypt the encrypted key returning a VetKey
      */
-    decryptAndVerify(tsk: TransportSecretKey, dpk: DerivedPublicKey, did: Uint8Array): VetKey {
+    decryptAndVerify(tsk: TransportSecretKey, dpk: DerivedPublicKey, derivation_id: Uint8Array): VetKey {
         // Check that c1 and c2 have the same discrete logarithm, ie that e(c1, g2) == e(g1, c2)
 
         const g1 = bls12_381.G1.ProjectivePoint.BASE;
@@ -268,7 +263,7 @@ export class EncryptedKey {
         const k = this.#c3.subtract(c1_tsk);
 
         // Verify that k is a valid BLS signature
-        const msg = augmentedHashToG1(dpk, did);
+        const msg = augmentedHashToG1(dpk, derivation_id);
         const check = bls12_381.pairingBatch([{ g1: k, g2: neg_g2}, { g1: msg, g2: dpk.getPoint() }]);
 
         const valid = bls12_381.fields.Fp12.eql(check, gt_one);
@@ -286,7 +281,7 @@ export class EncryptedKey {
 enum IbeDomainSeparators {
     HashToMask = "ic-crypto-vetkd-bls12-381-ibe-hash-to-mask",
     MaskSeed = "ic-crypto-vetkd-bls12-381-ibe-mask-seed",
-    MaskMsg = "ic-crypto-vetkd-bls12-381-ibe-mask-msg",
+    MaskMsg = "ic-crypto-vetkd-bls12-381-ibe-mask-msg-",
 }
 
 function hashToMask(seed: Uint8Array, msg: Uint8Array): bigint {
@@ -295,7 +290,7 @@ function hashToMask(seed: Uint8Array, msg: Uint8Array): bigint {
 }
 
 function xorBuf(a: Uint8Array, b: Uint8Array): Uint8Array {
-    if(a.length != b.length) {
+    if(a.length !== b.length) {
         throw new Error("xorBuf arguments should have the same length");
     }
     const c = new Uint8Array(a.length);
@@ -306,7 +301,7 @@ function xorBuf(a: Uint8Array, b: Uint8Array): Uint8Array {
 }
 
 function maskSeed(seed: Uint8Array, t: Uint8Array): Uint8Array {
-    if(t.length != 576) {
+    if(t.length !== 576) {
         throw new Error("Unexpected size for Gt element");
     }
     const mask = deriveSymmetricKey(t, IbeDomainSeparators.MaskSeed, seed.length);
@@ -314,9 +309,11 @@ function maskSeed(seed: Uint8Array, t: Uint8Array): Uint8Array {
 }
 
 function maskMsg(msg: Uint8Array, seed: Uint8Array): Uint8Array {
-    const mask = deriveSymmetricKey(seed, IbeDomainSeparators.MaskMsg, msg.length);
+    const domain_sep = IbeDomainSeparators.MaskMsg.concat(msg.length.toString());
+    const xof_seed = deriveSymmetricKey(seed, domain_sep, 32);
 
-    // TODO handle larger messages (eg using AES)
+    const mask = shake256(xof_seed, { dkLen: msg.length });
+
     return xorBuf(msg, mask);
 }
 
@@ -368,13 +365,17 @@ export class IdentityBasedEncryptionCiphertext {
      * The seed parameter must be a randomly generated value of exactly 32 bytes,
      * that was generated just for this one message. Using it for a second message,
      * or for any other purposes, compromises the security of the IBE scheme.
+     *
+     * Any user who is able to retrieve the VetKey for the specified
+     * derived public key and derivation_id will be able to decrypt
+     * this message.
      */
     static encrypt(dpk: DerivedPublicKey,
                    derivation_id: Uint8Array,
                    msg: Uint8Array,
                    seed: Uint8Array): IdentityBasedEncryptionCiphertext {
 
-        if(seed.length != SEED_BYTES) {
+        if(seed.length !== SEED_BYTES) {
             throw new Error("IBE seed must be exactly SEED_BYTES long");
         }
 
