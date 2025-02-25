@@ -31,12 +31,12 @@ test('get_accessible_shared_map_names', async () => {
 test('can get vetkey', async () => {
   let encrypted_maps = await new_encrypted_maps(id0());
   let owner = id0().getPrincipal();
-  let vetkey = await encrypted_maps.get_symmetric_vetkey(owner, "some key");
+  let vetkey = await encrypted_maps.get_vetkey(owner, "some key");
   expect('Ok' in vetkey).to.equal(true);
   // no trivial key output
   expect(isEqualArray(vetkey["Ok"].inner, new Uint8Array(16))).to.equal(false);
 
-  let second_vetkey = await encrypted_maps.get_symmetric_vetkey(owner, "some key");
+  let second_vetkey = await encrypted_maps.get_vetkey(owner, "some key");
   expect(isEqualArray(vetkey["Ok"].inner, second_vetkey["Ok"].inner)).to.equal(true);
 });
 
@@ -62,7 +62,7 @@ test('vetkey encryption roundtrip', async () => {
 test('cannot get unauthorized vetkey', async () => {
   let encrypted_maps = await new_encrypted_maps(id0());
   let owner = id0().getPrincipal();
-  expect((await encrypted_maps.get_symmetric_vetkey(id1().getPrincipal(), "some key"))["Err"]).to.equal("unauthorized user");
+  expect((await encrypted_maps.get_vetkey(id1().getPrincipal(), "some key"))["Err"]).to.equal("unauthorized user");
 });
 
 test('can share a key', async () => {
@@ -70,12 +70,12 @@ test('can share a key', async () => {
   let user = id1().getPrincipal();
   let encrypted_maps_owner = await new_encrypted_maps(id0());
   let encrypted_maps_user = await new_encrypted_maps(id1());
-  let vetkey_owner = await encrypted_maps_owner.get_symmetric_vetkey(owner, "some key");
+  let vetkey_owner = await encrypted_maps_owner.get_vetkey(owner, "some key");
   let rights = { 'ReadWrite': null };
 
   expect((await encrypted_maps_owner.set_user_rights(owner, "some key", user, rights))["Ok"]).to.deep.equal([rights]);
 
-  let vetkey_user = await encrypted_maps_user.get_symmetric_vetkey(owner, "some key");
+  let vetkey_user = await encrypted_maps_user.get_vetkey(owner, "some key");
 
   expect(isEqualArray(vetkey_owner["Ok"].inner, vetkey_user["Ok"].inner)).to.equal(true);
 });

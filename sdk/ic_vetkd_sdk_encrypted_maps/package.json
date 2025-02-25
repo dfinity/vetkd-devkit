@@ -1,5 +1,6 @@
 {
     "name": "ic_vetkd_sdk_encrypted_maps",
+    "version": "0.1.0",
     "files": [
       "dist"
     ],
@@ -8,7 +9,8 @@
     "typings": "dist/types/index.d.ts",
     "dependencies": {
       "typescript": "^5.7.3",
-      "@dfinity/agent": "^2.2.0"
+      "@dfinity/agent": "^2.2.0",
+      "ic_vetkd_sdk_utils": "^0.1.0"
     },
     "devDependencies": {
       "@babel/preset-env": "7.26.0",

@@ -1,5 +1,6 @@
 {
   "name": "ic_vetkd_sdk_key_manager_example",
+  "version": "0.1.0",
   "type": "module",
   "files": [
     "dist"

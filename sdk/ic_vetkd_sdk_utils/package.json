@@ -1,5 +1,6 @@
 {
     "name": "ic_vetkd_sdk_utils",
+    "version": "0.1.0",
     "files": [
         "dist"
     ],

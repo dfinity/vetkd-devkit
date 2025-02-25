@@ -1,6 +1,8 @@
 import { Principal } from "@dfinity/principal";
-import { get, set } from 'idb-keyval';
-import { TransportSecretKey } from "ic-vetkd-cdk-utils/ic_vetkd_cdk_utils";
+import { get, set } from "idb-keyval";
+import * as ic_vetkd_sdk_utils from "../../ic_vetkd_sdk_utils";
+import { VetKey } from "../../ic_vetkd_sdk_utils";
+
 
 export class EncryptedMaps {
     canister_client: EncryptedMapsClient;
@@ -26,24 +28,19 @@ export class EncryptedMaps {
         return await this.canister_client.get_encrypted_values_for_map(map_owner, map_name);
     }
 
-    async get_symmetric_vetkey(map_owner: Principal, map_name: string): Promise<{ 'Ok': ByteBuf } |
+    async get_vetkey(map_owner: Principal, map_name: string): Promise<{ 'Ok': VetKey } |
     { 'Err': string }> {
         // create a random transport key
-        const seed = window.crypto.getRandomValues(new Uint8Array(32));
-        const tsk = new TransportSecretKey(seed);
-        const encrypted_vetkey = await this.canister_client.get_encrypted_vetkey(map_owner, map_name, tsk.public_key());
-        if ('Err' in encrypted_vetkey) {
-            return encrypted_vetkey;
-        } else {
-            const encrypted_key_bytes = Uint8Array.from(encrypted_vetkey.Ok.inner);
-            const verification_key = await this.get_vetkey_verification_key();
-            const vetkey_name_bytes = new TextEncoder().encode(map_name);
-            const derivaition_id = new Uint8Array([...map_owner.toUint8Array(), ...vetkey_name_bytes]);
-            const symmetric_key_bytes = 16;
-            const symmetric_key_associated_data = new TextEncoder().encode("ic-vetkd-sdk-encrypted-maps");
-            const vetkey = tsk.decrypt_and_hash(encrypted_key_bytes, verification_key, derivaition_id, symmetric_key_bytes, symmetric_key_associated_data);
-            return { 'Ok': { inner: vetkey } };
-        }
+        const tsk = ic_vetkd_sdk_utils.TransportSecretKey.random();
+        const rawVetkey = await this.canister_client.get_encrypted_vetkey(map_owner, map_name, tsk.publicKeyBytes());
+        if ("Err" in rawVetkey) { return rawVetkey; }
+        const encrypted_vetkey = new ic_vetkd_sdk_utils.EncryptedKey(Uint8Array.from(rawVetkey.Ok.inner));
+
+        const verification_key = new ic_vetkd_sdk_utils.DerivedPublicKey(await this.get_vetkey_verification_key());
+        const vetkey_name_bytes = new TextEncoder().encode(map_name);
+        const derivaition_id = new Uint8Array([...map_owner.toUint8Array(), ...vetkey_name_bytes]);
+        const vetkey = encrypted_vetkey.decryptAndVerify(tsk, verification_key, derivaition_id);
+        return { 'Ok': vetkey };
     }
 
     async set_value(map_owner: Principal, map_name: string, map_key: string, data: Uint8Array): Promise<{ 'Ok': [] | Uint8Array } |
@@ -63,7 +60,6 @@ export class EncryptedMaps {
         const derived_key_result = await this.get_subkey_and_fetch_and_derive_if_needed(map_owner, map_name, map_key);
         if ("Err" in derived_key_result) { return derived_key_result; }
         const encrypted = await encrypt(Uint8Array.from(cleartext), derived_key_result.Ok);
-        const decrypted = await decrypt(encrypted, derived_key_result.Ok);
         return { "Ok": encrypted };
     }
 
@@ -102,44 +98,26 @@ export class EncryptedMaps {
         return await this.canister_client.get_user_rights(owner, map_name, user);
     }
 
-    async get_vetkey_or_fetch_if_needed(map_owner: Principal, map_name: string): Promise<{ 'Ok': CryptoKey } | { 'Err': string }
+    async get_vetkey_or_fetch_if_needed(map_owner: Principal, map_name: string): Promise<{ 'Ok': VetKey } | { 'Err': string }
     > {
-        const maybe_cached_vetkey = await get([map_owner.toString(), map_name]);
+        const indexedDbKey = ["ic_vetkd_sdk_encrypted_maps vetkey", map_owner.toText(), map_name];
+        const maybe_cached_vetkey: VetKey | undefined = await get(indexedDbKey);
         if (!!maybe_cached_vetkey) { return { 'Ok': maybe_cached_vetkey }; }
 
-        const seed = window.crypto.getRandomValues(new Uint8Array(32));
-        const tsk = new TransportSecretKey(seed);
+        const vetkey = await this.get_vetkey(map_owner, map_name);
+        if ("Err" in vetkey) { return vetkey };
 
-        const aes_256_gcm_key_raw = await this.get_symmetric_vetkey(map_owner, map_name);
-        if ("Err" in aes_256_gcm_key_raw) { return aes_256_gcm_key_raw };
-
-        const pk_bytes = await this.get_vetkey_verification_key();
-
-        const owner_bytes: Uint8Array = map_owner.toUint8Array();
-        const map_name_bytes: Uint8Array = new TextEncoder().encode(map_name);
-        let derivation_id = new Uint8Array([...owner_bytes, ...map_name_bytes]);
-
-        const vetkey: CryptoKey = await window.crypto.subtle.importKey("raw", Uint8Array.from(aes_256_gcm_key_raw.Ok.inner), "HKDF", false, ["deriveKey"]);
-        await set([[map_owner.toString(), map_name]], vetkey)
-        return { 'Ok': vetkey };
+        await set(indexedDbKey, vetkey.Ok);
+        return { 'Ok': vetkey.Ok };
     }
 
     async get_subkey_and_fetch_and_derive_if_needed(map_owner: Principal, map_name: string, map_key: string): Promise<{ 'Ok': CryptoKey } | { 'Err': string }> {
-        let maybe_derived_key = await get([[map_owner.toString(), map_name, map_key]]);
-        if (!!maybe_derived_key) {
-            return { 'Ok': maybe_derived_key };
-        }
-        const get_vetkey_result = await this.get_vetkey_or_fetch_if_needed(map_owner, map_name);
-        if ("Err" in get_vetkey_result) { return get_vetkey_result; }
 
-        const algorithm = {
-            name: "HKDF", salt: new TextEncoder().encode(map_key),
-            info: new TextEncoder().encode("ic_vetkd_sdk_encrypted_maps_subkey"),
-            hash: "SHA-256",
-        };
-        let derived_key = await window.crypto.subtle.deriveKey(algorithm, get_vetkey_result.Ok, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
+        const vetkey = await this.get_vetkey_or_fetch_if_needed(map_owner, map_name);
+        if ("Err" in vetkey) { return vetkey; }
 
-        await set([[map_owner.toString(), map_name, map_key]], derived_key);
+        let derivedKeyRaw = vetkey.Ok.deriveSymmetricKey(map_owner.toHex() + map_key, 32); 
+        let derived_key = await window.crypto.subtle.importKey("raw", derivedKeyRaw, { name: "AES-GCM", length: 256 }, true, ["encrypt", "decrypt"]);
 
         return { 'Ok': derived_key };
     }

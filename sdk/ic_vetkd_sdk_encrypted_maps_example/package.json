@@ -1,5 +1,6 @@
 {
     "name": "ic_vetkd_sdk_encrypted_maps_example",
+    "version": "0.1.0",
     "files": [
         "dist"
     ],
