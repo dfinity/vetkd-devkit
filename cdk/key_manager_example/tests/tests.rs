@@ -62,27 +62,32 @@ fn encrypted_vetkey_should_validate() {
     let key_name = random_key_name(rng);
     let transport_key = random_transport_key(rng);
     let transport_key_bytes = TransportKey::from(transport_key.public_key());
-    let encrypted_vetkey = env
-        .update::<Result<VetKey, String>>(
-            env.principal_0,
-            "get_encrypted_vetkey",
-            encode_args((key_owner, key_name.clone(), transport_key_bytes)).unwrap(),
-        )
-        .unwrap();
-    let derivation_id: Vec<u8> = key_owner
-        .as_slice()
-        .iter()
-        .chain(key_name.as_ref().iter())
-        .cloned()
-        .collect();
 
-    transport_key
-        .decrypt(
-            encrypted_vetkey.as_ref(),
-            verification_key.as_ref(),
-            derivation_id.as_ref(),
-        )
-        .expect("failed to decrypt and verify `vetkey");
+    let vetkey = || {
+        let encrypted_vetkey = env
+            .update::<Result<VetKey, String>>(
+                env.principal_0,
+                "get_encrypted_vetkey",
+                encode_args((key_owner, key_name.clone(), transport_key_bytes.clone())).unwrap(),
+            )
+            .unwrap();
+        let derivation_id: Vec<u8> = key_owner
+            .as_slice()
+            .iter()
+            .chain(key_name.as_ref().iter())
+            .cloned()
+            .collect();
+
+        transport_key
+            .decrypt(
+                encrypted_vetkey.as_ref(),
+                verification_key.as_ref(),
+                derivation_id.as_ref(),
+            )
+            .expect("failed to decrypt and verify `vetkey");
+    };
+
+    assert_eq!(vetkey(), vetkey());
 }
 
 #[test]

@@ -31,15 +31,15 @@ fn should_obtain_verification_key() {
 fn should_obtain_owned_encrypted_vetkey() {
     let rng = &mut reproducible_rng();
     let env = TestEnvironment::new(rng);
-    let key_owner = env.principal_0;
-    let key_name = random_key_name(rng);
+    let map_owner = env.principal_0;
+    let map_name = random_map_name(rng);
     let transport_key = random_transport_key(rng);
     let transport_key_bytes = TransportKey::from(transport_key.public_key());
     let encrypted_vetkey = env
         .update::<Result<VetKey, String>>(
             env.principal_0,
             "get_encrypted_vetkey",
-            encode_args((key_owner, key_name, transport_key_bytes)).unwrap(),
+            encode_args((map_owner, map_name, transport_key_bytes)).unwrap(),
         )
         .unwrap();
 
@@ -58,21 +58,21 @@ fn encrypted_vetkey_should_validate() {
         encode_one(()).unwrap(),
     );
 
-    let key_owner = env.principal_0;
-    let key_name = random_key_name(rng);
+    let map_owner = env.principal_0;
+    let map_name = random_map_name(rng);
     let transport_key = random_transport_key(rng);
     let transport_key_bytes = TransportKey::from(transport_key.public_key());
     let encrypted_vetkey = env
         .update::<Result<VetKey, String>>(
             env.principal_0,
             "get_encrypted_vetkey",
-            encode_args((key_owner, key_name.clone(), transport_key_bytes)).unwrap(),
+            encode_args((map_owner, map_name.clone(), transport_key_bytes)).unwrap(),
         )
         .unwrap();
-    let derivation_id: Vec<u8> = key_owner
+    let derivation_id: Vec<u8> = map_owner
         .as_slice()
         .iter()
-        .chain(key_name.as_ref().iter())
+        .chain(map_name.as_ref().iter())
         .cloned()
         .collect();
 
@@ -86,7 +86,7 @@ fn encrypted_vetkey_should_validate() {
 }
 
 #[test]
-fn key_sharing_should_work() {
+fn map_sharing_should_work() {
     let rng = &mut reproducible_rng();
     let env = TestEnvironment::new(rng);
 
@@ -96,16 +96,16 @@ fn key_sharing_should_work() {
         encode_one(()).unwrap(),
     );
 
-    let key_owner = env.principal_0;
-    let key_name = random_key_name(rng);
+    let map_owner = env.principal_0;
+    let map_name = random_map_name(rng);
 
     let prev_rights = env
         .update::<Result<Option<AccessRights>, String>>(
             env.principal_0,
             "set_user_rights",
             encode_args((
-                key_owner,
-                key_name.clone(),
+                map_owner,
+                map_name.clone(),
                 env.principal_1,
                 AccessRights::Read,
             ))
@@ -118,7 +118,7 @@ fn key_sharing_should_work() {
         .query::<Result<Option<AccessRights>, String>>(
             env.principal_0,
             "get_user_rights",
-            encode_args((key_owner, key_name.clone(), env.principal_0)).unwrap(),
+            encode_args((map_owner, map_name.clone(), env.principal_0)).unwrap(),
         )
         .unwrap();
     assert_eq!(current_rights_owner, Some(AccessRights::ReadWriteManage));
@@ -127,7 +127,7 @@ fn key_sharing_should_work() {
         .query::<Result<Option<AccessRights>, String>>(
             env.principal_1,
             "get_user_rights",
-            encode_args((key_owner, key_name.clone(), env.principal_1)).unwrap(),
+            encode_args((map_owner, map_name.clone(), env.principal_1)).unwrap(),
         )
         .unwrap();
     assert_eq!(current_rights_shared, Some(AccessRights::Read));
@@ -139,13 +139,13 @@ fn key_sharing_should_work() {
             .update::<Result<VetKey, String>>(
                 caller,
                 "get_encrypted_vetkey",
-                encode_args((key_owner, key_name.clone(), transport_key_bytes)).unwrap(),
+                encode_args((map_owner, map_name.clone(), transport_key_bytes)).unwrap(),
             )
             .unwrap();
-        let derivation_id: Vec<u8> = key_owner
+        let derivation_id: Vec<u8> = map_owner
             .as_slice()
             .iter()
-            .chain(key_name.as_ref().iter())
+            .chain(map_name.as_ref().iter())
             .cloned()
             .collect();
 
@@ -272,9 +272,9 @@ fn fast_forward(ic: &PocketIc, ticks: u64) {
     }
 }
 
-fn random_key_name<R: Rng + CryptoRng>(rng: &mut R) -> ByteBuf {
+fn random_map_name<R: Rng + CryptoRng>(rng: &mut R) -> ByteBuf {
     let length = rng.gen_range(0..32);
-    let mut key_name = vec![0u8; length];
-    rng.fill_bytes(&mut key_name);
-    ByteBuf::from(key_name)
+    let mut map_name = vec![0u8; length];
+    rng.fill_bytes(&mut map_name);
+    ByteBuf::from(map_name)
 }
