@@ -269,9 +269,64 @@ export class VetKey {
      *
      * The CryptoKey is not exportable
      */
-    async asHkdfCryptoKey(): Promise<CryptoKey> {
+    async asDerivedKeyMaterial(): Promise<DerivedKeyMaterial> {
+        return DerivedKeyMaterial.setup(this.#bytes);
+    }
+
+    /**
+     * Deserialize a VetKey from the 48 byte encoding of the BLS signature
+     *
+     * This deserializes the same value as returned by signatureBytes
+     */
+    static deserialize(bytes: Uint8Array): VetKey {
+        return new VetKey(bls12_381.G1.ProjectivePoint.fromHex(bytes));
+    }
+
+    /**
+     * @internal getter returning the point object of the VetKey
+     *
+     * Applications would not usually need to call this
+     */
+    getPoint(): G1Point {
+        return this.#pt;
+    }
+
+    /**
+     * @internal constructor
+     *
+     * This is public for typing reasons but there is no reason for an application
+     * to call this constructor.
+     */
+    constructor(pt: G1Point) {
+        this.#pt = pt;
+        this.#bytes = pt.toRawBytes(true);
+    }
+}
+
+export class DerivedKeyMaterial {
+    readonly #hkdf: CryptoKey;
+
+    /**
+     * @internal constructor
+     */
+    constructor(cryptokey: CryptoKey) {
+        this.#hkdf = cryptokey;
+    }
+
+    /**
+     * @internal constructor
+     */
+    static async setup(bytes: Uint8Array) {
         const exportable = false;
-        return window.crypto.subtle.importKey("raw", this.#bytes, "HKDF", exportable, ["deriveKey"]);
+        const hkdf = await window.crypto.subtle.importKey("raw", bytes, "HKDF", exportable, ["deriveKey"]);
+        return new DerivedKeyMaterial(hkdf);
+    }
+
+    /**
+     * Return the CryptoKey
+     */
+    getCryptoKey(): CryptoKey {
+        return this.#hkdf;
     }
 
     /**
@@ -283,8 +338,6 @@ export class VetKey {
      */
     async deriveAesGcmCryptoKey(domainSep: Uint8Array | string): Promise<CryptoKey> {
         const exportable = false;
-
-        const hkdfKey = await this.asHkdfCryptoKey();
 
         const algorithm = {
             name: "HKDF",
@@ -299,7 +352,7 @@ export class VetKey {
             length: 32 * 8,
         };
 
-        return window.crypto.subtle.deriveKey(algorithm, hkdfKey, gcmParams, exportable, ["encrypt", "decrypt"]);
+        return window.crypto.subtle.deriveKey(algorithm, this.#hkdf, gcmParams, exportable, ["encrypt", "decrypt"]);
     }
 
     /**
@@ -345,35 +398,6 @@ export class VetKey {
         catch(e) {
             throw new Error("Decryption failed");
         }
-    }
-
-    /**
-     * Deserialize a VetKey from the 48 byte encoding of the BLS signature
-     *
-     * This deserializes the same value as returned by signatureBytes
-     */
-    static deserialize(bytes: Uint8Array): VetKey {
-        return new VetKey(bls12_381.G1.ProjectivePoint.fromHex(bytes));
-    }
-
-    /**
-     * @internal getter returning the point object of the VetKey
-     *
-     * Applications would not usually need to call this
-     */
-    getPoint(): G1Point {
-        return this.#pt;
-    }
-
-    /**
-     * @internal constructor
-     *
-     * This is public for typing reasons but there is no reason for an application
-     * to call this constructor.
-     */
-    constructor(pt: G1Point) {
-        this.#pt = pt;
-        this.#bytes = pt.toRawBytes(true);
     }
 }
 

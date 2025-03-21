@@ -123,7 +123,7 @@ test('hkdf using webcrypto', async () => {
     const key1 = vetkey.deriveSymmetricKey(domainSep, 32);
     assertEqual(bytesToHex(key1), "3b7bd854033cdc119865ba3019dc1e35010fdaf90f8ff5c9cfe9d1d557dddb29");
 
-    const wckey = await vetkey.asHkdfCryptoKey();
+    const wckey = (await vetkey.asDerivedKeyMaterial()).getCryptoKey();
 
     const algorithm = {
         name: "HKDF",
@@ -150,17 +150,20 @@ test('AES-GCM encryption', async () => {
     const testMessageBytes = new TextEncoder().encode(testMessage);
     const domainSep = "ic-test-domain-sep";
 
+    const keyMaterial = await vetkey.asDerivedKeyMaterial();
+
     // Test string encryption path, then decryption
-    const msg1 = await vetkey.encryptMessage(testMessage, domainSep);
-    assertEqual(await vetkey.decryptMessage(msg1, domainSep), testMessageBytes);
+
+    const msg1 = await keyMaterial.encryptMessage(testMessage, domainSep);
+    assertEqual(await keyMaterial.decryptMessage(msg1, domainSep), testMessageBytes);
 
     // Test Uint8Array encryption path, then decryption
-    const msg2 = await vetkey.encryptMessage(testMessageBytes, domainSep);
-    assertEqual(await vetkey.decryptMessage(msg2, domainSep), testMessageBytes);
+    const msg2 = await keyMaterial.encryptMessage(testMessageBytes, domainSep);
+    assertEqual(await keyMaterial.decryptMessage(msg2, domainSep), testMessageBytes);
 
     // Test decryption of known ciphertext encrypted with the derived key
     const msg3 = hexToBytes("476f440e30bb95fff1420ce41ba6a07e03c3fcc0a751cfb23e64a8dcb0fc2b1eb74e2d4768f5c4dccbf2526609156664046ad27a6e78bd93bb8b");
-    assertEqual(await vetkey.decryptMessage(msg3, domainSep), testMessageBytes);
+    assertEqual(await keyMaterial.decryptMessage(msg3, domainSep), testMessageBytes);
 
     // Test decryption of various mutated or truncated ciphertexts: all should fail
 
@@ -173,7 +176,7 @@ test('AES-GCM encryption', async () => {
         modMsg[byteToFlip] ^= flip;
 
         expect(async () => {
-            return await vetkey.decryptMessage(modMsg, domainSep);
+            return await keyMaterial.decryptMessage(modMsg, domainSep);
         }).rejects.toThrow("Decryption failed");
     }
 
@@ -185,7 +188,7 @@ test('AES-GCM encryption', async () => {
             "Invalid ciphertext, too short" : "Decryption failed";
 
         expect(async () => {
-            return await vetkey.decryptMessage(modMsg, domainSep);
+            return await keyMaterial.decryptMessage(modMsg, domainSep);
         }).rejects.toThrow(expectedError);
     }
 
@@ -195,7 +198,7 @@ test('AES-GCM encryption', async () => {
         const modMsg = new Uint8Array([...msg3, ...extraBytes]);
 
         expect(async () => {
-            return await vetkey.decryptMessage(modMsg, domainSep);
+            return await keyMaterial.decryptMessage(modMsg, domainSep);
         }).rejects.toThrow("Decryption failed");
     }
 });
