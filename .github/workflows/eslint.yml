@@ -1,0 +1,46 @@
+name: eslint
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - sdk/**
+      - .github/workflows/eslint.yml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  eslint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup
+        run: |
+          sudo apt-get install nodejs
+      - name: Eslint
+        run: |
+          pushd sdk/ic_vetkd_sdk_encrypted_maps/
+          npm install
+          npm run lint
+          popd
+
+          pushd sdk/ic_vetkd_sdk_encrypted_maps_example/
+          npm install
+          npm run lint
+          popd
+
+          pushd sdk/ic_vetkd_sdk_key_manager/
+          npm install
+          npm run lint
+          popd
+
+          pushd sdk/ic_vetkd_sdk_key_manager_example/
+          npm install
+          npm run lint
+          popd
+
+          pushd sdk/ic_vetkd_sdk_utils/
+          npm install
+          npm run lint
+          popd

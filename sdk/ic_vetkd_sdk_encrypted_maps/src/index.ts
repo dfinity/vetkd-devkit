@@ -24,6 +24,7 @@ export class EncryptedMaps {
                 const mapKey = new TextDecoder().decode(Uint8Array.from(mapKeyBytes.inner));
                 return this.decrypt_for(mapId[0], mapName, mapKey, Uint8Array.from(encryptedValue.inner));
             });
+            /* eslint-disable @typescript-eslint/no-unused-expressions */
             [mapId, values]
         })
         return result;
