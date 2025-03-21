@@ -5,6 +5,7 @@ description.workspace = true
 documentation.workspace = true
 edition.workspace = true
 version.workspace = true
+license.workspace = true
 
 [lib]
 path = "src/lib.rs"
@@ -17,7 +18,6 @@ ic-cdk-macros = { workspace = true }
 ic-stable-structures = { workspace = true }
 ic-vetkd-cdk-encrypted-maps = { path = "../../../cdk/encrypted_maps" }
 ic-vetkd-cdk-types = { path = "../../../cdk/types" }
-ic-vetkd-utils = { workspace = true }
 serde = { workspace = true }
 serde_cbor = { workspace = true }
 

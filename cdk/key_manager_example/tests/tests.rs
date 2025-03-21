@@ -9,7 +9,7 @@ use rand_chacha::ChaCha20Rng;
 use std::path::Path;
 
 pub fn reproducible_rng() -> ChaCha20Rng {
-    let seed = rand::thread_rng().gen();
+    let seed = rand::rng().random();
     println!("RNG seed: {seed:?}");
     ChaCha20Rng::from_seed(seed)
 }
@@ -274,7 +274,7 @@ fn fast_forward(ic: &PocketIc, ticks: u64) {
 }
 
 fn random_key_name<R: Rng + CryptoRng>(rng: &mut R) -> ByteBuf {
-    let length = rng.gen_range(0..32);
+    let length = rng.random_range(0..32);
     let mut key_name = vec![0u8; length];
     rng.fill_bytes(&mut key_name);
     ByteBuf::from(key_name)

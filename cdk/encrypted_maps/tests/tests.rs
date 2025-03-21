@@ -512,7 +512,7 @@ fn can_get_owned_map_names() {
             assert!(map_names.contains(map_name));
         }
 
-        let should_remove_map = rng.gen_bool(0.2);
+        let should_remove_map = rng.random_bool(0.2);
 
         if should_remove_map {
             encrypted_maps
@@ -526,7 +526,7 @@ fn can_get_owned_map_names() {
 fn random_encrypted_maps<R: Rng + CryptoRng>(rng: &mut R) -> EncryptedMaps {
     let memory_manager = MemoryManager::init(DefaultMemoryImpl::default());
     let (memory_id_encrypted_maps, memory_ids_key_manager) = random_unique_memory_ids(rng);
-    let domain_separator_len = rng.gen_range(0..32);
+    let domain_separator_len = rng.random_range(0..32);
     EncryptedMaps::init(
         &random_utf8_string(rng, domain_separator_len),
         memory_manager.get(MemoryId::new(memory_id_encrypted_maps)),

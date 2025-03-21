@@ -290,7 +290,7 @@ fn can_instantiate_two_key_managers() {
 fn random_key_manager<R: Rng + CryptoRng>(rng: &mut R) -> KeyManager {
     let memory_manager = MemoryManager::init(DefaultMemoryImpl::default());
     let (_memory_id_encrypted_maps, memory_ids_key_manager) = random_unique_memory_ids(rng);
-    let domain_separator_len = rng.gen_range(0..32);
+    let domain_separator_len = rng.random_range(0..32);
     KeyManager::init(
         &random_utf8_string(rng, domain_separator_len),
         memory_manager.get(MemoryId::new(memory_ids_key_manager[0])),

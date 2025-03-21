@@ -5,6 +5,7 @@ description.workspace = true
 documentation.workspace = true
 edition.workspace = true
 version.workspace = true
+license.workspace = true
 
 [lib]
 path = "src/lib.rs"
@@ -17,14 +18,14 @@ ic-cdk-macros = { workspace = true }
 ic-stable-structures = { workspace = true }
 ic-vetkd-cdk-key-manager = { path = "../key_manager" }
 ic-vetkd-cdk-types = { path = "../types" }
-ic-vetkd-utils = { workspace = true }
 serde = { workspace = true }
 
 [dev-dependencies]
 ic-vetkd-cdk-test-utils = { path = "../test_utils" }
+ic-vetkd-utils = { workspace = true }
 pocket-ic = { workspace = true }
-rand = "0.8.4"
-rand_chacha = "0.3.0"
+rand = { workspace = true }
+rand_chacha = { workspace = true }
 reqwest = "0.12.12"
 
 [features]

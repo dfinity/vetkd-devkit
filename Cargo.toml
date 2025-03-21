@@ -15,6 +15,7 @@ resolver = "2"
 authors = ["The Internet Computer Project Developers"]
 version = "0.1.0"
 edition = "2021"
+license = "Apache-2.0"
 description = "Verifiably encrypted threshold key derivation (VetKD) canister development kit (CDK)"
 documentation = "https://crates.io/vetkd_cdk"
 
@@ -22,16 +23,17 @@ documentation = "https://crates.io/vetkd_cdk"
 anyhow = "1.0.95"
 candid = "0.10.2"
 hex = "0.4.3"
-ic-cdk = "0.13.0"
-ic-cdk-macros = "0.13.0"
-ic-stable-structures = "0.6.5"
-ic-types = "0.7.0"
+ic-cdk = "0.17.1"
+ic-cdk-macros = "0.17.1"
+ic-stable-structures = "0.6.8"
 ic-vetkd-utils = { version = "0.1.0", git = "https://github.com/dfinity/ic.git" }
 lazy_static = "1.5.0"
 pocket-ic = "7.0.0"
+rand = "0.9.0"
+rand_chacha = "0.9.0"
 serde = "1.0.217"
+serde_bytes = "0.11.15"
 serde_cbor = "0.11.2"
-serde_json = "1.0.138"
 
 [profile.release]
 lto = true

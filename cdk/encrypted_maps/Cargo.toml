@@ -5,34 +5,31 @@ description.workspace = true
 documentation.workspace = true
 edition.workspace = true
 version.workspace = true
+license.workspace = true
 
 [lib]
 crate-type = ["lib"]
 
 [dependencies]
-anyhow = "1.0.89"
+anyhow = { workspace = true }
 candid = { workspace = true }
-hex = "0.4.3"
-ic-cdk = { workspace = true }
+hex = { workspace = true }
 ic-cdk-macros = { workspace = true }
 ic-stable-structures = { workspace = true }
 ic-vetkd-cdk-key-manager = { path = "../key_manager" }
 ic-vetkd-cdk-types = { path = "../types" }
-ic-vetkd-utils = { workspace = true }
-lazy_static = "1.5.0"
+lazy_static = { workspace = true }
 serde = { workspace = true }
-serde_bytes = "0.11.15"
-serde_with = "3.11.0"
-strum = "0.26.3"
-strum_macros = "0.26.3"
+serde_bytes = { workspace = true }
 
 [dev-dependencies]
 assert_matches = "1.5.0"
 ic-agent = "0.38.2"
 ic-vetkd-cdk-test-utils = { path = "../test_utils" }
 pocket-ic = { workspace = true }
-rand = "0.8.4"
-rand_chacha = "0.3.0"
+rand = { workspace = true }
+rand_chacha = { workspace = true }
+strum = "0.26.3"
 
 [features]
 expose-testing-api = ["ic-vetkd-cdk-key-manager/expose-testing-api"]
