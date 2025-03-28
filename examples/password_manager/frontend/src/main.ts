@@ -1,10 +1,8 @@
 import "./app.css";
-import App from './App.svelte'
+import App from "./App.svelte";
 
-const init = async () => {
-  const app = new App({
+const app = new App({
     target: document.body,
-  });
-};
+});
 
-init();
+export default app;

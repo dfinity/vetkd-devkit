@@ -51,23 +51,23 @@
                     bind:value={filter}
                     class="bg-transparent text-base {filter.length > 0
                         ? 'border'
-                        : ''} rounded-lg h-8 px-3"
+                        : ''} h-8 rounded-lg px-3"
                     placeholder="Filter vaults by name..."
                 />
             </div>
 
             <div
-                class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-w-7xl"
+                class="grid max-w-7xl grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3"
             >
                 {#each filteredVaults as vault ([vault.owner, vault.name])}
                     <a
-                        class="p-4 rounded-md border border-base-300 dark:border-base-300 bg-base
-dark:bg-base-100 hover:-translate-y-2 transition-transform"
+                        class="bg-base rounded-md border border-base-300 p-4 transition-transform
+hover:-translate-y-2 dark:border-base-300 dark:bg-base-100"
                         use:link
                         href={`/vaults/${vault.owner}/${vault.name}`}
                     >
                         <div class="pointer-events-none">
-                            <h2 class="text-lg font-bold mb-2 line-clamp-3">
+                            <h2 class="mb-2 line-clamp-3 text-lg font-bold">
                                 "{vault.name}" owned by {vault.owner}
                             </h2>
                         </div>
@@ -75,10 +75,10 @@ dark:bg-base-100 hover:-translate-y-2 transition-transform"
                 {/each}
             </div>
         {:else}
-            <div class="text-center pt-8 italic">
+            <div class="pt-8 text-center italic">
                 You don't have any vaults.
             </div>
-            <div class="text-center pt-8">
+            <div class="pt-8 text-center">
                 <a href="/" use:link class="btn btn-primary"
                     >Add a new password</a
                 >

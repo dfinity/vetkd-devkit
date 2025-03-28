@@ -23,23 +23,23 @@
 <BubbleMenu for={null} {editor} let:commands offset={8}>
     <div class="btn-group">
         <button class="btn btn-sm" on:click={commands.header1}>
-            <span class="w-6 h-6 p-1"><Heading /></span>
+            <span class="h-6 w-6 p-1"><Heading /></span>
         </button>
         <button class="btn btn-sm" on:click={commands.bulletList}>
-            <span class="w-6 h-6 p-1"><FaListUl /></span>
+            <span class="h-6 w-6 p-1"><FaListUl /></span>
         </button>
         <button class="btn btn-sm" on:click={commands.bold}>
-            <span class="w-6 h-6 p-1"><Bold /></span>
+            <span class="h-6 w-6 p-1"><Bold /></span>
         </button>
         <button class="btn btn-sm" on:click={commands.italic}>
-            <span class="w-6 h-6 p-1"><Italic /></span>
+            <span class="h-6 w-6 p-1"><Italic /></span>
         </button>
     </div>
 </BubbleMenu>
 
 <div
     use:asRoot={editor}
-    class="p-4 min-h-[16rem] textarea border-base-300 {classNames} {disabled
+    class="textarea min-h-[16rem] border-base-300 p-4 {classNames} {disabled
         ? 'opacity-50'
         : ''}"
     use:focus

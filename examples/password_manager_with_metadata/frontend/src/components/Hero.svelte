@@ -11,11 +11,11 @@
     >;
 </script>
 
-<div class="hero min-h-screen pt-8 sm:pt-0 content-start sm:content-center">
-    <div class="text-center hero-content">
+<div class="hero min-h-screen content-start pt-8 sm:content-center sm:pt-0">
+    <div class="hero-content text-center">
         <div class="max-w-xl">
             <h1
-                class="mb-5 text-4xl sm:text-5xl font-bold text-primary dark:text-white"
+                class="mb-5 text-4xl font-bold text-primary sm:text-5xl dark:text-white"
             >
                 Password Manager
             </h1>
@@ -28,7 +28,7 @@
             </p>
 
             {#if auth.state === "initializing-auth"}
-                <div class="text-lg font-semibold mt-8">
+                <div class="mt-8 text-lg font-semibold">
                     <Spinner />
                     Initializing...
                 </div>
@@ -37,24 +37,24 @@
                     >Please login to start storing passwords</button
                 >
             {:else if auth.state === "error"}
-                <div class="text-lg font-semibold mt-8">An error occurred.</div>
+                <div class="mt-8 text-lg font-semibold">An error occurred.</div>
             {/if}
 
-            <div class="text-xs mt-8 sm:mt-12 opacity-75 mb-12 sm:mb-32">
+            <div class="mb-12 mt-8 text-xs opacity-75 sm:mb-32 sm:mt-12">
                 <DisclaimerCopy />
             </div>
         </div>
     </div>
-    <div class="fixed bottom-0 text-center left-0 right-0 pb-4 sm:pb-8">
+    <div class="fixed bottom-0 left-0 right-0 pb-4 text-center sm:pb-8">
         <img
             src="/img/ic-badge-powered-by-crypto_label-stripe-white-text.png"
             alt="Powered by the Internet Computer"
-            class="hidden dark:inline h-4"
+            class="hidden h-4 dark:inline"
         />
         <img
             src="/img/ic-badge-powered-by-crypto_label-stripe-dark-text.png"
             alt="Powered by the Internet Computer"
-            class="dark:hidden inline h-4"
+            class="inline h-4 dark:hidden"
         />
     </div>
 </div>

@@ -33,8 +33,7 @@
         const selectedIndex = selectElement.selectedIndex;
         const selectedValue = selectElement.options[selectedIndex].value;
 
-        if (selectedValue === "Read") {
-        } else if (selectedValue === "ReadWrite") {
+        if (selectedValue === "ReadWrite") {
             accessRights = { ReadWrite: null };
         } else if (selectedValue === "ReadWriteManage") {
             accessRights = { ReadWriteManage: null };
@@ -146,12 +145,12 @@
     <p class="mt-3">
         This vault is <span class="font-bold">shared</span> with you. It is
         owned by
-        <span class="italic font-bold">{editedVault.owner}</span>.
+        <span class="font-bold italic">{editedVault.owner}</span>.
     </p>
     <p class="mt-3">Users with whom the vault is shared:</p>
 {/if}
-<div class="flex flex-wrap space-x-2 mt-2">
-    {#each editedVault.users as sharing}
+<div class="mt-2 flex flex-wrap space-x-2">
+    {#each editedVault.users as sharing (sharing[0].toText())}
         <button
             class="btn btn-outline btn-sm flex items-center"
             on:click={() => {
@@ -164,7 +163,7 @@
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                class="inline-block w-4 h-4 stroke-current"
+                class="inline-block h-4 w-4 stroke-current"
             >
                 <path
                     stroke-linecap="round"
@@ -178,7 +177,7 @@
     <input
         bind:value={newSharing}
         placeholder="Add principal..."
-        class="bg-transparent text-base rounded-lg h-8 px-3 w-auto {adding ||
+        class="h-8 w-auto rounded-lg bg-transparent px-3 text-base {adding ||
         removing
             ? 'opacity-50'
             : ''} 
@@ -204,7 +203,7 @@
         <option value="ReadWriteManage">read-write-manage</option>
     </select>
     <button
-        class="btn btn-sm btn-ghost
+        class="btn btn-ghost btn-sm
           {!canManage ? 'hidden' : ''}
           {adding || removing ? 'loading' : ''}"
         on:click={add}

@@ -1,10 +1,7 @@
-module.exports = {
-    content: [
-      './index.html',
-      './src/**/*.{svelte,js,ts,jsx,tsx}',
-    ],
-    theme: {
-      extend: {},
-    },
-    plugins: [require('daisyui'), require('@tailwindcss/line-clamp')],
-  };
+import daisyui from "daisyui";
+import lineClamp from "@tailwindcss/line-clamp";
+
+export default {
+    content: ["./index.html", "./src/**/*.{svelte,js,ts,jsx,tsx}"],
+    plugins: [daisyui, lineClamp],
+};
