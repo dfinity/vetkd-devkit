@@ -6,6 +6,9 @@
     "dev": "vite",
     "build": "npm run build:deps && vite build",
     "build:deps": "cd ../../../sdk/ic_vetkd_sdk_encrypted_maps_example && npm i && npm run build",
+    "lint": "eslint",
+    "prettier": "prettier --write .",
+    "prettier-check": "prettier --check .",
     "preview": "vite preview"
   },
   "peerDependencies": {

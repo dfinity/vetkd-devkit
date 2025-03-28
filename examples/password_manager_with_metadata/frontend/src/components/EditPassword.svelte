@@ -211,7 +211,7 @@
                 )
                 .passwords.find((p) => p[0] === passwordName);
 
-            if (!!searchedForPassword) {
+            if (searchedForPassword) {
                 originalPassword = { ...searchedForPassword[1] };
                 url = originalPassword.metadata.url;
                 tags = originalPassword.metadata.tags;
@@ -256,7 +256,7 @@
             disabled={updating || deleting}
         >
             {#if !deleting}
-                <span class="w-6 h-6 p-1"><Trash /></span>
+                <span class="h-6 w-6 p-1"><Trash /></span>
             {/if}
 
             {deleting ? "Deleting..." : ""}
@@ -269,7 +269,7 @@
                     type="text"
                     bind:value={parentVaultOwner}
                     placeholder="Enter vault owner"
-                    class="input input-bordered w-full mb-3"
+                    class="input input-bordered mb-3 w-full"
                 />
                 <input
                     type="text"
@@ -329,7 +329,7 @@
             </a>
 
             <button
-                class="btn mt-4 btn-primary {updating ? 'loading' : ''}"
+                class="btn btn-primary mt-4 {updating ? 'loading' : ''}"
                 disabled={updating || deleting}
                 on:click={save}>{updating ? "Saving..." : "Save"}</button
             >

@@ -6,8 +6,6 @@ import css from 'rollup-plugin-css-only';
 import typescript from '@rollup/plugin-typescript';
 import environment from 'vite-plugin-environment';
 
-const production = false;// !process.env.VITE_WATCH_MODE;
-
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [

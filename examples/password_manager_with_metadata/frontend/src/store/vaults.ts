@@ -36,11 +36,7 @@ export async function refreshVaults(
     owner: Principal,
     passwordManager: PasswordManager,
 ) {
-    const vaults = await passwordManager.getDecryptedVaults(owner);
-    if ("Err" in vaults) {
-        throw new Error(vaults.Err);
-    }
-    updateVaults(vaults.Ok);
+    updateVaults(await passwordManager.getDecryptedVaults(owner));
 }
 
 export async function setPassword(
@@ -86,15 +82,12 @@ export async function addUser(
     userRights: AccessRights,
     passwordManager: PasswordManager,
 ) {
-    const result = await passwordManager.encryptedMaps.set_user_rights(
+    await passwordManager.encryptedMaps.set_user_rights(
         owner,
         vaultName,
         user,
         userRights,
     );
-    if ("Err" in result) {
-        throw new Error(result.Err);
-    }
 }
 
 export async function removeUser(
@@ -103,14 +96,7 @@ export async function removeUser(
     user: Principal,
     passwordManager: PasswordManager,
 ) {
-    const result = await passwordManager.encryptedMaps.remove_user(
-        owner,
-        vaultName,
-        user,
-    );
-    if ("Err" in result) {
-        throw new Error(result.Err);
-    }
+    await passwordManager.encryptedMaps.remove_user(owner, vaultName, user);
 }
 
 auth.subscribe(async ($auth) => {

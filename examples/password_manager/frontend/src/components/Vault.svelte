@@ -97,9 +97,7 @@
         <div class="mt-5"></div>
 
         <div class="pointer-events-none">
-            <h2 class="text-lg font-bold mb-2 line-clamp-3">
-                Passwords
-            </h2>
+            <h2 class="text-lg font-bold mb-2 line-clamp-3">Passwords</h2>
         </div>
         {#if vault.passwords.length === 0}
             <div class="text-center pt-8 italic">

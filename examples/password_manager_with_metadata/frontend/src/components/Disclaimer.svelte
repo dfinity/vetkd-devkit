@@ -11,7 +11,7 @@
 
 {#if !isDismissed}
     <div
-        class="sticky bottom-0 p-4 text-xs bg-base-300 mt-4 sm:flex"
+        class="sticky bottom-0 mt-4 bg-base-300 p-4 text-xs sm:flex"
         out:fly={{ y: 50 }}
     >
         <p class="opacity-90 sm:flex-1">
@@ -19,7 +19,7 @@
         </p>
 
         <button
-            class="btn btn-outline btn-xs sm:btn-sm sm:self-start mt-4 sm:mt-0 sm:ml-4 opacity-90"
+            class="btn btn-outline btn-xs mt-4 opacity-90 sm:btn-sm sm:ml-4 sm:mt-0 sm:self-start"
             on:click={dismiss}>I understand</button
         >
     </div>

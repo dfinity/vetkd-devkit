@@ -8,9 +8,9 @@
     import { link } from "svelte-spa-router";
 </script>
 
-<div class="bg-base-200 drawer drawer-mobile lg:drawer-open">
+<div class="drawer-mobile drawer bg-base-200 lg:drawer-open">
     <input id="my-drawer-3" type="checkbox" class="drawer-toggle" />
-    <div class="flex flex-col drawer-content lg:!z-[1000]">
+    <div class="drawer-content flex flex-col lg:!z-[1000]">
         <div class="flex-1">
             <slot />
         </div>
@@ -19,11 +19,11 @@
     <div class="drawer-side">
         <label for="my-drawer-3" class="drawer-overlay" />
         <aside
-            class="flex flex-col justify-between border-r border-base-300 bg-base-100
-    text-base-content w-64 sm:w-80 h-full"
+            class="flex h-full w-64 flex-col justify-between border-r
+    border-base-300 bg-base-100 text-base-content sm:w-80"
         >
             <div
-                class="sticky h-16 py-4 pl-5 text-2xl font-bold border-b border-base-300 text-primary dark:text-white"
+                class="sticky h-16 border-b border-base-300 py-4 pl-5 text-2xl font-bold text-primary dark:text-white"
             >
                 VetKD Password Manager
             </div>
@@ -36,11 +36,11 @@
                 </div>
             </div>
             <ul
-                class="p-4 overflow-y-auto menu w-full bg-base-100 flex-1 flex flex-col"
+                class="menu flex w-full flex-1 flex-col overflow-y-auto bg-base-100 p-4"
             >
                 <li>
                     <a href="/" use:link>
-                        <span class="w-6 h-6 p-1 mr-2">
+                        <span class="mr-2 h-6 w-6 p-1">
                             <FaPlusSquare />
                         </span>
                         New password
@@ -48,7 +48,7 @@
                 </li>
                 <li>
                     <a href="/vaults" use:link>
-                        <span class="w-6 h-6 p-1 mr-2">
+                        <span class="mr-2 h-6 w-6 p-1">
                             <GoDatabase />
                         </span>
                         Your vaults</a
@@ -57,7 +57,7 @@
                 <li class="flex-1 bg-transparent" />
                 <li>
                     <button on:click={() => logout()}>
-                        <span class="w-6 h-6 p-1 mr-2">
+                        <span class="mr-2 h-6 w-6 p-1">
                             <FaDoorOpen />
                         </span>
                         Log out</button
@@ -73,7 +73,7 @@
                 <img
                     src="/img/ic-badge-powered-by-crypto_transparent-dark-text.png"
                     alt="Powered by the Internet Computer"
-                    class="dark:hidden inline"
+                    class="inline dark:hidden"
                 />
             </div>
         </aside>

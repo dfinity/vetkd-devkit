@@ -8,26 +8,30 @@ export class EncryptedMaps {
 
     constructor(canister_client: EncryptedMapsClient) { this.canister_client = canister_client; }
 
-    async get_accessible_shared_map_names(): Promise<[Principal, ByteBuf][]> {
-        return await this.canister_client.get_accessible_shared_map_names();
+    async get_accessible_shared_map_names(): Promise<[Principal, string][]> {
+        return (await this.canister_client.get_accessible_shared_map_names()).map(([principal, byteBuf]) => {
+            return [principal, new TextDecoder().decode(Uint8Array.from(byteBuf.inner))];
+        });
     }
 
-    async get_owned_non_empty_map_names(): Promise<Array<ByteBuf>> {
-        return await this.canister_client.get_owned_non_empty_map_names();
+    async get_owned_non_empty_map_names(): Promise<Array<string>> {
+        return (await this.canister_client.get_owned_non_empty_map_names()).map((byteBuf) => {
+            return new TextDecoder().decode(Uint8Array.from(byteBuf.inner));
+        });
     }
 
-    async get_all_accessible_values(): Promise<Array<[[Principal, ByteBuf], Array<[ByteBuf, ByteBuf]>]>> {
+    async get_all_accessible_values(): Promise<Array<[[Principal, string], Array<[string, Uint8Array]>]>> {
         const result = await this.canister_client.get_all_accessible_encrypted_values();
-        const decryptedResult: Array<[[Principal, ByteBuf], Array<[ByteBuf, ByteBuf]>]> = [];
+        const decryptedResult: Array<[[Principal, string], Array<[string, Uint8Array]>]> = [];
         for (const [mapId, encryptedValues] of result) {
             const mapName = new TextDecoder().decode(Uint8Array.from(mapId[1].inner));
-            const keyValues: Array<[ByteBuf, ByteBuf]> = [];
+            const keyValues: Array<[string, Uint8Array]> = [];
             for (const [mapKeyBytes, encryptedValue] of encryptedValues) {
                 const mapKey = new TextDecoder().decode(Uint8Array.from(mapKeyBytes.inner));
                 const value = await this.decrypt_for(mapId[0], mapName, mapKey, Uint8Array.from(encryptedValue.inner));
-                keyValues.push([mapKeyBytes, { inner: value }]);
+                keyValues.push([mapKey, value]);
             };
-            decryptedResult.push([mapId, keyValues]);
+            decryptedResult.push([[mapId[0], new TextDecoder().decode(Uint8Array.from(mapId[1].inner))], keyValues]);
         }
 
         return decryptedResult;
@@ -38,19 +42,20 @@ export class EncryptedMaps {
         const result: Array<MapData> = [];
         for (const encryptedMapData of accessibleEncryptedMaps) {
             const mapName = new TextDecoder().decode(Uint8Array.from(encryptedMapData.map_name.inner));
-            const keyvals: Array<[Uint8Array, Uint8Array]> = [];
+            const keyvals: Array<[string, Uint8Array]> = [];
             for (const [mapKeyBytes, encryptedValue] of encryptedMapData.keyvals) {
                 const mapKey = new TextDecoder().decode(Uint8Array.from(mapKeyBytes.inner));
                 const decrypted = await this.decrypt_for(encryptedMapData.map_owner, mapName, mapKey, Uint8Array.from(encryptedValue.inner));
-                keyvals.push([Uint8Array.from(mapKeyBytes.inner), decrypted]);
+                keyvals.push([mapKey, decrypted]);
             }
             result.push({
                 'access_control': encryptedMapData.access_control,
                 'keyvals': keyvals,
-                'map_name': Uint8Array.from(encryptedMapData.map_name.inner),
+                'map_name': mapName,
                 'map_owner': encryptedMapData.map_owner,
             })
         }
+        console.info("get_all_accessible_maps", JSON.stringify(result));
         return result;
     }
 
@@ -62,27 +67,22 @@ export class EncryptedMaps {
         return await this.decrypt_for(map_owner, map_name, map_key, Uint8Array.from(encrypted_value.Ok[0].inner));
     }
 
-    async get_values_for_map(map_owner: Principal, map_name: string): Promise<{ 'Ok': Array<[ByteBuf, ByteBuf]> } |
-    { 'Err': string }> {
+    async get_values_for_map(map_owner: Principal, map_name: string): Promise<Array<[string, Uint8Array]>> {
         const encryptedValues = await this.canister_client.get_encrypted_values_for_map(map_owner, map_name);
-        if ("Err" in encryptedValues) { return encryptedValues; }
+        if ("Err" in encryptedValues) { throw Error(encryptedValues.Err); }
 
         const resultGet = new Array<[string, Uint8Array]>();
-        for (const [x, y] of encryptedValues.Ok) {
-            resultGet.push([new TextDecoder().decode(Uint8Array.from(x.inner)), Uint8Array.from(y.inner)]);
+        for (const [k, v] of encryptedValues.Ok) {
+            resultGet.push([new TextDecoder().decode(Uint8Array.from(k.inner)), Uint8Array.from(v.inner)]);
         }
 
-        const result = new Array<[ByteBuf, ByteBuf]>();
+        const result = new Array<[string, Uint8Array]>();
         for (const [mapKey, mapValue] of encryptedValues.Ok) {
             const passwordName = new TextDecoder().decode(Uint8Array.from(mapKey.inner));
             const decrypted = await this.decrypt_for(map_owner, map_name, passwordName, Uint8Array.from(mapValue.inner));
-            result.push([mapKey, { inner: decrypted }]);
+            result.push([passwordName, decrypted]);
         }
-        const resultDecrypted = new Array<[string, string]>();
-        for (const [x, y] of result) {
-            resultDecrypted.push([new TextDecoder().decode(Uint8Array.from(x.inner)), new TextDecoder().decode(Uint8Array.from(y.inner))]);
-        }
-        return { "Ok": result };
+        return result;
     }
 
     async getDerivedKeyMaterial(map_owner: Principal, map_name: string): Promise<DerivedKeyMaterial> {
@@ -121,14 +121,19 @@ export class EncryptedMaps {
         return await derivedKeyMaterial.decryptMessage(encrypted_value, map_key);
     }
 
-    async remove_encrypted_value(map_owner: Principal, map_name: string, map_key: string): Promise<{ 'Ok': [] | [ByteBuf] } |
-    { 'Err': string }> {
-        return await this.canister_client.remove_encrypted_value(map_owner, map_name, map_key);
+    async remove_encrypted_value(map_owner: Principal, map_name: string, map_key: string): Promise<Uint8Array | undefined> {
+        const encryptedResult = await this.canister_client.remove_encrypted_value(map_owner, map_name, map_key);
+        if ("Err" in encryptedResult) { throw Error(encryptedResult.Err); }
+        else if (encryptedResult.Ok.length === 0) { return undefined; }
+        return await this.decrypt_for(map_owner, map_name, map_key, Uint8Array.from(encryptedResult.Ok[0].inner));
     }
 
-    async remove_map_values(map_owner: Principal, map_name: string): Promise<{ 'Ok': Array<ByteBuf> } |
-    { 'Err': string }> {
-        return await this.canister_client.remove_map_values(map_owner, map_name);
+    async remove_map_values(map_owner: Principal, map_name: string): Promise<Array<string>> {
+        const encryptedResult = await this.canister_client.remove_map_values(map_owner, map_name);
+        if ("Err" in encryptedResult) { throw Error(encryptedResult.Err); }
+        else {
+            return encryptedResult.Ok.map((mapKey) => new TextDecoder().decode(Uint8Array.from(mapKey.inner)));
+        }
     }
 
     async get_vetkey_verification_key(): Promise<Uint8Array> {
@@ -139,23 +144,34 @@ export class EncryptedMaps {
         return this.verification_key;
     }
 
-    async set_user_rights(owner: Principal, map_name: string, user: Principal, user_rights: AccessRights): Promise<{ 'Ok': [] | [AccessRights] } |
-    { 'Err': string }> {
-        return await this.canister_client.set_user_rights(owner, map_name, user, user_rights);
+    async set_user_rights(owner: Principal, map_name: string, user: Principal, user_rights: AccessRights): Promise<AccessRights | undefined> {
+        const result = await this.canister_client.set_user_rights(owner, map_name, user, user_rights);
+        if ('Err' in result) throw Error(result.Err);
+        else if (result.Ok.length > 1) throw Error("Unexpected result from set_user_rights");
+        const prevUserRights = result.Ok.length === 0 ? undefined : result.Ok[0];
+        return prevUserRights;
     }
 
-    async get_user_rights(owner: Principal, map_name: string, user: Principal): Promise<{ 'Ok': [] | [AccessRights] } |
-    { 'Err': string }> {
-        return await this.canister_client.get_user_rights(owner, map_name, user);
+    async get_user_rights(owner: Principal, map_name: string, user: Principal): Promise<AccessRights | undefined> {
+        const result = await this.canister_client.get_user_rights(owner, map_name, user);
+        if ('Err' in result) throw Error(result.Err);
+        else if (result.Ok.length > 1) throw Error("Unexpected result from set_user_rights");
+
+        const userRights = result.Ok.length === 0 ? undefined : result.Ok[0];
+        return userRights;
     }
 
-    async get_shared_user_access_for_map(owner: Principal, map_name: string) {
-        return await this.canister_client.get_shared_user_access_for_map(owner, map_name);
+    async get_shared_user_access_for_map(owner: Principal, map_name: string) : Promise<Array<[Principal, AccessRights]>> {
+        const result = await this.canister_client.get_shared_user_access_for_map(owner, map_name);
+        if ("Err" in result) { throw Error(result.Err); }
+        return result.Ok;
     }
 
-    async remove_user(owner: Principal, map_name: string, user: Principal): Promise<{ 'Ok': [] | [AccessRights] } |
-    { 'Err': string }> {
-        return await this.canister_client.remove_user(owner, map_name, user);
+    async remove_user(owner: Principal, map_name: string, user: Principal): Promise<AccessRights | undefined> {
+        const result = await this.canister_client.remove_user(owner, map_name, user);
+        if ("Err" in result) { throw Error(result.Err); }
+        const userRights = result.Ok.length === 0 ? undefined : result.Ok[0];
+        return userRights;
     }
 
     async getDerivedKeyMaterialOrFetchIfNeeded(map_owner: Principal, map_name: string): Promise<DerivedKeyMaterial> {
@@ -170,8 +186,8 @@ export class EncryptedMaps {
 
 export interface MapData {
     'access_control': Array<[Principal, AccessRights]>,
-    'keyvals': Array<[Uint8Array, Uint8Array]>,
-    'map_name': Uint8Array,
+    'keyvals': Array<[string, Uint8Array]>,
+    'map_name': string,
     'map_owner': Principal,
 }
 

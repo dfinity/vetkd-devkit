@@ -4,12 +4,14 @@
     "license": "Apache-2.0",
     "type": "module",
     "scripts": {
-        "dev": "vite",
         "build": "npm run build:deps && vite build",
         "build:deps": "cd ../../../sdk/ic_vetkd_sdk_encrypted_maps_example && npm i && npm run build",
+        "dev": "vite",
+        "gen-bindings": "cd ../backend && make extract-candid && cd .. && dfx generate password_manager_with_metadata && mv src/declarations/password_manager_with_metadata/* frontend/src/declarations/ && rmdir -p src/declarations/password_manager_with_metadata",
         "lint": "eslint",
-        "preview": "vite preview",
-        "gen-bindings": "cd ../backend && make extract-candid && cd .. && dfx generate password_manager_with_metadata && mv src/declarations/password_manager_with_metadata/* frontend/src/declarations/ && rmdir -p src/declarations/password_manager_with_metadata"
+        "prettier": "prettier --write .",
+        "prettier-check": "prettier --check .",
+        "preview": "vite preview"
     },
     "peerDependencies": {
         "ic_vetkd_sdk_encrypted_maps": "^0.1.0"
@@ -21,8 +23,13 @@
         "@tailwindcss/vite": "^4.0.0",
         "autoprefixer": "^10.4.20",
         "eslint": "^9.22.0",
+        "eslint-config-prettier": "^10.1.1",
+        "eslint-plugin-prettier": "^5.2.5",
+        "eslint-plugin-svelte": "^3.3.3",
+        "globals": "^16.0.0",
         "prettier": "3.5.3",
         "prettier-plugin-svelte": "^3.3.3",
+        "prettier-plugin-tailwindcss": "^0.6.11",
         "rollup-plugin-css-only": "^4.5.2",
         "typescript-eslint": "^8.26.1",
         "vite": "^5.4.14",

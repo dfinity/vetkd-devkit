@@ -1,7 +1,6 @@
 <script lang="ts">
     import { onDestroy } from "svelte";
     import { Editor, placeholder } from "typewriter-editor";
-    import { passwordFromContent } from "../lib/password";
     import { auth } from "../store/auth";
     import { draft } from "../store/draft";
     import { setPassword, refreshVaults } from "../store/vaults";
@@ -101,7 +100,7 @@
             type="text"
             bind:value={vaultOwner}
             placeholder="Enter vault owner"
-            class="input input-bordered w-full mb-3"
+            class="input input-bordered mb-3 w-full"
         />
         <input
             type="text"
@@ -131,7 +130,7 @@
     </div>
     <PasswordEditor {editor} class="mb-3" disabled={creating} />
     <button
-        class="btn mt-6 btn-primary {creating ? 'loading' : ''}"
+        class="btn btn-primary mt-6 {creating ? 'loading' : ''}"
         disabled={creating}
         on:click={add}>{creating ? "Adding..." : "Add password"}</button
     >

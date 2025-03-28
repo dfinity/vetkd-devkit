@@ -9,7 +9,7 @@
     };
 </script>
 
-<div class="absolute right-4 bottom-4 flex flex-col max-w-xs space-y-4">
+<div class="absolute bottom-4 right-4 flex max-w-xs flex-col space-y-4">
     {#each $notifications as n (n.id)}
         <div
             class="alert {classMap[n.type]} bg-opacity-100 text-white"

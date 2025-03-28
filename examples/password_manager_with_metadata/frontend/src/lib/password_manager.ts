@@ -52,25 +52,17 @@ export class PasswordManager {
         }
     }
 
-    async getDecryptedVaults(
-        owner: Principal,
-    ): Promise<{ Ok: VaultModel[] } | { Err: string }> {
+    async getDecryptedVaults(owner: Principal): Promise<VaultModel[]> {
         const vaultsSharedWithMe =
             await this.encryptedMaps.get_accessible_shared_map_names();
         const vaultsOwnedByMeResult =
             await this.encryptedMaps.get_owned_non_empty_map_names();
 
         const vaultIds = new Array<[Principal, string]>();
-        for (const vaultNameBytes of vaultsOwnedByMeResult) {
-            const vaultName = new TextDecoder().decode(
-                Uint8Array.from(vaultNameBytes.inner),
-            );
+        for (const vaultName of vaultsOwnedByMeResult) {
             vaultIds.push([owner, vaultName]);
         }
-        for (const [otherOwner, vaultNameBytes] of vaultsSharedWithMe) {
-            const vaultName = new TextDecoder().decode(
-                Uint8Array.from(vaultNameBytes.inner),
-            );
+        for (const [otherOwner, vaultName] of vaultsSharedWithMe) {
             vaultIds.push([otherOwner, vaultName]);
         }
 
@@ -118,21 +110,13 @@ export class PasswordManager {
                     otherOwner,
                     vaultName,
                 );
-            if ("Err" in usersResult) {
-                throw new Error(usersResult.Err);
-            }
 
             vaults.push(
-                vaultFromContent(
-                    otherOwner,
-                    vaultName,
-                    passwords,
-                    usersResult.Ok,
-                ),
+                vaultFromContent(otherOwner, vaultName, passwords, usersResult),
             );
         }
 
-        return { Ok: vaults };
+        return vaults;
     }
 
     async removePassword(

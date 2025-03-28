@@ -41,7 +41,7 @@
                     v.owner.compareTo(vaultOwner) === "eq" &&
                     v.name === vaultName,
             );
-            if (!!searchedForVault) {
+            if (searchedForVault) {
                 vault = searchedForVault;
                 vaultSummary += summarize(vault);
                 const me = $auth.client.getIdentity().getPrincipal();
@@ -63,8 +63,8 @@
 </script>
 
 <Header>
-    <span slot="title" class="flex items-center gap-2 h-full">
-        <span style={`width: 64px; height: 64px;`} class="inline-block">
+    <span slot="title" class="flex h-full items-center gap-2">
+        <span style="width: 64px; height: 64px;" class="inline-block">
             <GiOpenTreasureChest />
         </span>
         Vault: {vault.name}
@@ -76,13 +76,13 @@
     </svelte:fragment>
 </Header>
 
-<main class="p-4 pb-24 relative min-h-screen flex flex-col">
+<main class="relative flex min-h-screen flex-col p-4 pb-24">
     {#if $vaultsStore.state === "loading"}
         <Spinner />
         Loading vault...
     {:else if $vaultsStore.state === "loaded"}
         <div class="pointer-events-none">
-            <h2 class="text-lg font-bold mb-2 line-clamp-3">
+            <h2 class="mb-2 line-clamp-3 text-lg font-bold">
                 {vaultSummary}
             </h2>
         </div>
@@ -95,31 +95,34 @@
         <div class="mt-5"></div>
 
         <div class="pointer-events-none">
-            <h2 class="text-lg font-bold mb-2 line-clamp-3">Passwords</h2>
+            <h2 class="mb-2 line-clamp-3 text-lg font-bold">Passwords</h2>
         </div>
         {#if vault.passwords.length === 0}
-            <div class="text-center pt-8 italic">
+            <div class="pt-8 text-center italic">
                 You don't have any passwords in this vault.
             </div>
-            <div class="text-center pt-8">
+            <div class="pt-8 text-center">
                 <a href="/" use:link class="btn btn-primary"
                     >Add a new password</a
                 >
             </div>
         {:else}
             <div
-                class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3
-            max-w-7xl"
+                class="grid max-w-7xl grid-cols-1 gap-3 sm:grid-cols-2
+            md:grid-cols-3"
             >
                 {#each vault.passwords as password ((password[1].owner, password[1].parentVaultName, password[1].passwordName))}
                     <a
-                        class="p-4 rounded-md border border-base-300 dark:border-base-300 bg-base
-dark:bg-base-100 hover:-translate-y-2 transition-transform"
+                        class="bg-base rounded-md border border-base-300 p-4 transition-transform
+hover:-translate-y-2 dark:border-base-300 dark:bg-base-100"
                         use:link
                         href={`/edit/vaults/${vault.owner}/${vault.name}/${password[1].passwordName}`}
                     >
                         <div class="pointer-events-none">
-                            <h2 class="text-lg font-bold mb-2 line-clamp-3" style="word-break: break-all;">
+                            <h2
+                                class="mb-2 line-clamp-3 text-lg font-bold"
+                                style="word-break: break-all;"
+                            >
                                 {password[1].passwordName}: "{password[1]
                                     .content}"
                             </h2>
@@ -130,7 +133,7 @@ dark:bg-base-100 hover:-translate-y-2 transition-transform"
         {/if}
         <div class="flex-grow"></div>
         <div class="text-center">
-            <a href={`/vaults`} use:link class="btn btn-primary">
+            <a href="/vaults" use:link class="btn btn-primary">
                 Back to overview
             </a>
         </div>

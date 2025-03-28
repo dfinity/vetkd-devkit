@@ -53,25 +53,25 @@
                     bind:value={filter}
                     class="bg-transparent text-base {filter.length > 0
                         ? 'border'
-                        : ''} rounded-lg h-8 px-3"
+                        : ''} h-8 rounded-lg px-3"
                     placeholder="Filter notes..."
                 />
             </div>
 
             <div
-                class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-w-7xl"
+                class="grid max-w-7xl grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3"
             >
                 {#each filteredVaults as vault (vault.name)}
                     {#each Array.from(vault.passwords
                             .values()
-                            .map(([name, password]) => password)) as password}
+                            .map((password) => password[1])) as password ((password.owner, password.parentVaultName, password.passwordName))}
                         <Password {password} />
                     {/each}
                 {/each}
             </div>
         {:else}
-            <div class="text-center pt-8 italic">You don't have any notes.</div>
-            <div class="text-center pt-8">
+            <div class="pt-8 text-center italic">You don't have any notes.</div>
+            <div class="pt-8 text-center">
                 <a href="/" use:link class="btn btn-primary">Add a note</a>
             </div>
         {/if}

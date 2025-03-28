@@ -41,7 +41,7 @@
                 )
                 .passwords.find((p) => p[0] === passwordName);
 
-            if (!!searchedForPassword) {
+            if (searchedForPassword) {
                 password = searchedForPassword[1];
                 passwordSummary += summarize(password);
             } else {
@@ -58,7 +58,7 @@
 </script>
 
 <Header>
-    <span slot="title" class="flex items-center gap-2 h-full">
+    <span slot="title" class="flex h-full items-center gap-2">
         Password: {password.passwordName}
     </span>
     <svelte:fragment slot="actions">
@@ -68,26 +68,26 @@
     </svelte:fragment>
 </Header>
 
-<main class="p-4 pb-24 relative min-h-screen flex flex-col">
+<main class="relative flex min-h-screen flex-col p-4 pb-24">
     {#if $vaultsStore.state === "loading"}
         <Spinner />
         Loading password...
     {:else if $vaultsStore.state === "loaded"}
         {#if password.parentVaultName === ""}
-            <div class="text-center pt-8 italic">
+            <div class="pt-8 text-center italic">
                 There is no such password in this vault.
             </div>
-            <div class="text-center pt-8">
+            <div class="pt-8 text-center">
                 <a href="/" use:link class="btn btn-primary"
                     >Add a new password</a
                 >
             </div>
         {:else}
             <div
-                class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 max-w-7xl"
+                class="grid max-w-7xl grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-3"
             >
                 <div class="pointer-events-none">
-                    <h2 class="text-lg font-bold mb-2 line-clamp-3">
+                    <h2 class="mb-2 line-clamp-3 text-lg font-bold">
                         {password.passwordName}: "{password.content}"
                     </h2>
                 </div>

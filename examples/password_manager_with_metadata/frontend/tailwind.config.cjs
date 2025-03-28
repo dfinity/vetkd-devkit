@@ -1,10 +1,9 @@
-module.exports = {
-    content: [
-      './index.html',
-      './src/**/*.{svelte,js,ts,jsx,tsx}',
-    ],
+import daisyui from "daisyui";
+
+export default {
+    content: ["./index.html", "./src/**/*.{svelte,js,ts,jsx,tsx}"],
     theme: {
-      extend: {},
+        extend: {},
     },
-    plugins: [require('daisyui')],
-  };
+    plugins: [daisyui],
+};

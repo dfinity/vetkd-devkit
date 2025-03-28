@@ -33,18 +33,17 @@ test('can get vetkey', async () => {
   const key_manager = await new_key_manager(id).catch((err) => { throw err; });
   const owner = id.getPrincipal();
   const vetkey = await key_manager.get_encrypted_vetkey(owner, "some key").catch((err) => { throw err; });
-  expect('Ok' in vetkey).to.equal(true);
   // no trivial key output
-  expect(isEqualArray(vetkey["Ok"].inner, new Uint8Array(16))).to.equal(false);
+  expect(isEqualArray(vetkey, new Uint8Array(16))).to.equal(false);
 
   const second_vetkey = await key_manager.get_encrypted_vetkey(owner, "some key").catch((err) => { throw err; });
-  expect(isEqualArray(vetkey["Ok"].inner, second_vetkey["Ok"].inner)).to.equal(true);
+  expect(isEqualArray(vetkey, second_vetkey)).to.equal(true);
 });
 
 test('cannot get unauthorized vetkey', async () => {
   const [id0, id1] = ids();
   const key_manager = await new_key_manager(id0).catch((err) => { throw err; });
-  expect((await key_manager.get_encrypted_vetkey(id1.getPrincipal(), "some key"))["Err"]).to.equal("unauthorized");
+  await expect(key_manager.get_encrypted_vetkey(id1.getPrincipal(), "some key")).rejects.toThrow("unauthorized");
 });
 
 test('can share a key', async () => {
@@ -54,17 +53,13 @@ test('can share a key', async () => {
   const key_manager_owner = await new_key_manager(id0).catch((err) => { throw err; });
   const key_manager_user = await new_key_manager(id1).catch((err) => { throw err; });
   const vetkey_owner = await key_manager_owner.get_encrypted_vetkey(owner, "some key");
-  expect("Ok" in vetkey_owner).to.equal(true);
-
-  expect("Ok" in await key_manager_owner.remove_user(owner, "some_key", user));
 
   const rights = { 'ReadWrite': null };
-
-  expect((await key_manager_owner.set_user_rights(owner, "some key", user, rights))["Ok"]).to.deep.equal([]);
+  expect((await key_manager_owner.set_user_rights(owner, "some key", user, rights))).toBeUndefined();
 
   const vetkey_user = await key_manager_user.get_encrypted_vetkey(owner, "some key");
 
-  expect(isEqualArray(vetkey_owner["Ok"].inner, vetkey_user["Ok"].inner)).to.equal(true);
+  expect(isEqualArray(vetkey_owner, vetkey_user)).to.equal(true);
 });
 
 test('sharing rights are consistent', async () => {
@@ -75,8 +70,8 @@ test('sharing rights are consistent', async () => {
   const key_manager_user = await new_key_manager(id1).catch((err) => { throw err; });
   const rights = { 'ReadWrite': null };
 
-  expect((await key_manager_owner.set_user_rights(owner, "some key", user, rights))["Ok"]).to.deep.equal([]);
-  expect((await key_manager_user.get_user_rights(owner, "some key", user))["Ok"]).to.deep.equal([rights]);
+  expect((await key_manager_owner.set_user_rights(owner, "some key", user, rights))).toBeUndefined();
+  expect((await key_manager_user.get_user_rights(owner, "some key", user))).to.deep.equal(rights);
 });
 
 function isEqualArray(a, b) {
