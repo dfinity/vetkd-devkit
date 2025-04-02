@@ -3,11 +3,15 @@ name = "backend"
 version = "0.0.0"
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
 [lib]
 crate-type = ["cdylib"]
 
 [dependencies]
-candid = "0.10"
-ic-cdk = "0.17"
+candid = { workspace = true }
+ic-cdk = { workspace = true }
+ic-cdk-macros = { workspace = true }
+ic-stable-structures = { workspace = true }
+ic-vetkd-cdk-types = { path = "../../../../cdk/types" }
+serde = { workspace = true }
+serde_cbor = { workspace = true }
+serde_bytes = { workspace = true }

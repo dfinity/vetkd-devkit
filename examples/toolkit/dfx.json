@@ -9,15 +9,22 @@
       }
     },
     "frontend": {
-      "dependencies": [
-        "backend"
-      ],
-      "source": [
-        "src/frontend/dist"
-      ],
+      "dependencies": ["backend"],
+      "source": ["src/frontend/dist"],
       "type": "assets",
       "declarations": {
         "output": "src/frontend/declarations"
+      }
+    },
+    "chainkey_testing_canister": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/chainkey-testing-canister/releases/download/v0.1.0/chainkey_testing_canister.did",
+      "wasm": "https://github.com/dfinity/chainkey-testing-canister/releases/download/v0.1.0/chainkey_testing_canister.wasm.gz",
+      "specified_id": "vrqyr-saaaa-aaaan-qzn4q-cai",
+      "remote": {
+        "id": {
+          "ic": "vrqyr-saaaa-aaaan-qzn4q-cai"
+        }
       }
     }
   },
