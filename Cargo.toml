@@ -1,12 +1,13 @@
 [workspace]
 members = [
-    "cdk/encrypted_maps_example",
-    "cdk/key_manager_example",
-    "cdk/encrypted_maps",
-    "cdk/key_manager",
-    "cdk/test_utils",
-    "cdk/types",
-    "examples/password_manager_with_metadata/backend"
+  "cdk/encrypted_maps_example",
+  "cdk/key_manager_example",
+  "cdk/encrypted_maps",
+  "cdk/key_manager",
+  "cdk/test_utils",
+  "cdk/types",
+  "examples/password_manager_with_metadata/backend",
+  "examples/toolkit/src/backend",
 ]
 resolver = "2"
 
@@ -38,3 +39,4 @@ serde_cbor = "0.11.2"
 lto = true
 opt-level = 'z'
 panic = 'abort'
+
