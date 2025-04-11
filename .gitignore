@@ -86,3 +86,6 @@ node_modules
 **/*.njsproj
 **/*.sln
 **/*.sw?
+
+# Motoko
+*.mops

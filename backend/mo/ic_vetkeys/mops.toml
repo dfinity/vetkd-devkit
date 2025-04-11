@@ -1,0 +1,16 @@
+[package]
+name = "ic-vetkeys"
+version = "0.1.0"
+description = "IC VetKeys Library"
+repository = "https://github.com/dfinity/vetkd-devkit"
+keywords = [
+  "vetkeys,vetkd,encryption,privacy,signature,BLS,key ",
+  "derivation,IBE"
+]
+license = "Apache-2.0"
+
+[dependencies]
+base = "0.14.6"
+
+[dev-dependencies]
+test = "2.1.1"
