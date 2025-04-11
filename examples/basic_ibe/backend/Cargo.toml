@@ -1,5 +1,5 @@
 [package]
-name = "ic-vetkeys"
+name = "ic-vetkd-example-basic-ibe-backend"
 authors.workspace = true
 description.workspace = true
 documentation.workspace = true
@@ -8,31 +8,19 @@ version.workspace = true
 license.workspace = true
 
 [lib]
-crate-type = ["lib"]
+path = "src/lib.rs"
+crate-type = ["cdylib"]
 
 [dependencies]
-anyhow = { workspace = true }
 candid = { workspace = true }
-futures = "0.3.31"
-hex = { workspace = true }
 ic-cdk = { workspace = true }
 ic-cdk-macros = { workspace = true }
 ic-stable-structures = { workspace = true }
-lazy_static = { workspace = true }
+ic-vetkeys = { path = "../../../backend/ic_vetkeys" }
 serde = { workspace = true }
 serde_bytes = { workspace = true }
+serde_cbor = { workspace = true }
 serde_with = { workspace = true }
-strum = "0.26.3"
-strum_macros = "0.26.3"
-
-[dev-dependencies]
-assert_matches = "1.5.0"
-ic-agent = "0.38.2"
-ic-vetkeys-test-utils = { path = "../ic_vetkeys_test_utils" }
-pocket-ic = { workspace = true }
-rand = { workspace = true }
-rand_chacha = { workspace = true }
-strum = "0.26.3"
 
 [features]
 expose-testing-api = []

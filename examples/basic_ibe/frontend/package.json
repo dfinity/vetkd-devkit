@@ -1,0 +1,25 @@
+{
+  "name": "frontend",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "npm run build:deps && tsc && vite build",
+    "build:deps": "cd ../../../frontend/ic_vetkeys && npm run build",
+    "preview": "vite preview"
+  },
+  "peerDependencies": {
+    "ic_vetkeys": "^0.1.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^12.1.2",
+    "typescript": "~5.7.2",
+    "vite": "^6.2.0",
+    "vite-plugin-environment": "^1.1.3"
+  },
+  "dependencies": {
+    "@dfinity/auth-client": "^2.4.1",
+    "@dfinity/principal": "^2.4.1"
+  }
+}

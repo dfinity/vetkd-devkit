@@ -1,0 +1,37 @@
+{
+  "canisters": {
+    "basic_ibe": {
+      "candid": "backend/backend.did",
+      "package": "ic-vetkd-example-basic-ibe-backend",
+      "type": "rust",
+      "metadata": [
+        {
+          "name": "candid:service",
+          "visibility": "public"
+        }
+      ]
+    },
+    "chainkey_testing_canister": {
+      "type": "custom",
+      "candid": "https://github.com/dfinity/chainkey-testing-canister/releases/download/v0.1.0/chainkey_testing_canister.did",
+      "wasm": "https://github.com/dfinity/chainkey-testing-canister/releases/download/v0.1.0/chainkey_testing_canister.wasm.gz"
+    },
+    "internet-identity": {
+      "type": "pull",
+      "id": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+    },
+    "www": {
+      "frontend": {
+        "entrypoint": "frontend/dist/index.html"
+      },
+      "source": ["frontend/dist/"],
+      "type": "assets"
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "localhost:8000",
+      "type": "ephemeral"
+    }
+  }
+}

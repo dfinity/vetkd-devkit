@@ -1,0 +1,19 @@
+type Inbox = record { messages : vec Message };
+type Message = record {
+  sender : principal;
+  timestamp : nat64;
+  encrypted_message : blob;
+  receiver : principal;
+};
+type Result = variant { Ok; Err : text };
+type SendMessageRequest = record {
+  encrypted_message : blob;
+  receiver : principal;
+};
+service : {
+  get_my_encrypted_ibe_key : (blob) -> (blob);
+  get_my_messages : () -> (Inbox) query;
+  get_root_ibe_public_key : () -> (blob);
+  remove_my_messages : () -> (Inbox);
+  send_message : (SendMessageRequest) -> (Result);
+}
