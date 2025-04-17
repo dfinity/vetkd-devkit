@@ -1,4 +1,4 @@
-//! # VetKD CDK - KeyManager
+//! # VetKD Backend - KeyManager
 //!
 //! ## Overview
 //!

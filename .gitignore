@@ -86,3 +86,5 @@ node_modules
 **/*.njsproj
 **/*.sln
 **/*.sw?
+
+docs/generated/

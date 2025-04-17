@@ -1,0 +1,93 @@
+:root {
+  --color-background: #f5f5f5;
+  --color-text: #333;
+  --color-primary: #0070f3;
+  --color-hover: #0051b3;
+}
+
+body {
+  margin: 0;
+  padding: 2rem;
+}
+
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  margin-top: 0;
+  color: var(--color-text);
+}
+
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--color-hover);
+}
+
+section {
+  margin: 2rem 0;
+}
+
+section a {
+  margin: 0.5rem 0;
+  font-size: 1.1rem;
+}
+
+.github-link {
+  margin-top: 2rem;
+  text-align: center;
+}
+
+.github-link a {
+  font-size: 2rem;
+  color: var(--color-text);
+  transition: color 0.2s ease;
+}
+
+.github-link a:hover {
+  color: var(--color-primary);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.header h1 {
+  margin: 0;
+  line-height: 1;
+}
+
+.github-icon {
+  width: 40px;
+  height: 40px;
+  transition: opacity 0.2s ease;
+  vertical-align: middle;
+}
+
+.github-icon:hover {
+  opacity: 0.8;
+}
+
+.monorepo-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  border-bottom: 2px solid var(--color-primary);
+  transition: color 0.2s ease, border-color 0.2s ease;
+}
+
+.monorepo-link:hover {
+  color: var(--color-hover);
+  border-color: var(--color-hover);
+} 

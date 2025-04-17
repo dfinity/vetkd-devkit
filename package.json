@@ -4,5 +4,8 @@
         "frontend/ic_vetkeys",
         "examples/password_manager/frontend",
         "examples/password_manager_with_metadata/frontend"
-    ]
+    ],
+    "scripts": {
+        "build": "npm run build --workspaces --if-present; npm run bundle --workspaces --if-present"
+    }
 }

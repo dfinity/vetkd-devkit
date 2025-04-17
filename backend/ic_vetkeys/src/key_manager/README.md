@@ -1,4 +1,4 @@
-# VetKey CDK - KeyManager
+# VetKeys Backend - KeyManager
 
 > [!IMPORTANT]  
 > These support libraries are under active development and are subject to change. Access to the repositories has been opened to allow for early feedback. Check back regularly for updates.

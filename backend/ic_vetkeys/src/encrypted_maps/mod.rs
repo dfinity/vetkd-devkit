@@ -1,4 +1,4 @@
-//! # VetKD CDK - EncryptedMaps
+//! # VetKD Backend - EncryptedMaps
 //!
 //! ## Overview
 //!
