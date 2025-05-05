@@ -1,0 +1,9 @@
+{
+  "canisters": {
+    "ic_vetkeys_manager_canister": {
+      "main": "src/Main.mo",
+      "type": "motoko",
+      "args": "--enhanced-orthogonal-persistence"
+    }
+  }
+}

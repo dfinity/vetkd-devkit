@@ -9,9 +9,8 @@ let p1 = Principal.fromText("2vxsx-fae");
 let p2 = Principal.fromText("aaaaa-aa");
 let keyName = Text.encodeUtf8("some key");
 
-type KeyManager = VetKey.KeyManager<VetKey.AccessRights>;
-func newKeyManager() : KeyManager {
-    VetKey.KeyManager<VetKey.AccessRights>("key manager", accessRightsOperations);
+func newKeyManager() : VetKey.KeyManager.KeyManager<VetKey.AccessRights> {
+    VetKey.KeyManager.KeyManager<VetKey.AccessRights>("key manager", accessRightsOperations);
 };
 
 test(

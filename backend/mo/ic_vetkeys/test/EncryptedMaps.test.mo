@@ -6,10 +6,10 @@ import Text "mo:base/Text";
 import Blob "mo:base/Blob";
 import { test } "mo:test";
 
-type EncryptedMaps = VetKey.EncryptedMaps<VetKey.AccessRights>;
+type EncryptedMaps = VetKey.EncryptedMaps.EncryptedMaps<VetKey.AccessRights>;
 let accessRightsOperations = VetKey.accessRightsOperations();
 func newEncryptedMaps() : EncryptedMaps {
-    EncryptedMaps<VetKey.AccessRights>("encrypted maps", accessRightsOperations);
+    EncryptedMaps.EncryptedMaps<VetKey.AccessRights>("encrypted maps", accessRightsOperations);
 };
 
 let p1 = Principal.fromText("2vxsx-fae");
@@ -21,7 +21,7 @@ let mapValue = Text.encodeUtf8("some value");
 test(
     "can remove map values",
     func() {
-        let encryptedMaps = VetKey.EncryptedMaps<VetKey.AccessRights>("encrypted maps", accessRightsOperations);
+        let encryptedMaps = newEncryptedMaps();
         let result = encryptedMaps.removeMapValues(p1, (p1, mapName));
         switch (result) {
             case (#ok(keys)) {

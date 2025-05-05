@@ -102,7 +102,7 @@ fn map_sharing_should_work() {
                 map_owner,
                 map_name.clone(),
                 env.principal_1,
-                AccessRights::Read,
+                AccessRights::ReadWriteManage,
             ))
             .unwrap(),
         )
@@ -125,7 +125,7 @@ fn map_sharing_should_work() {
             encode_args((map_owner, map_name.clone(), env.principal_1)).unwrap(),
         )
         .unwrap();
-    assert_eq!(current_rights_shared, Some(AccessRights::Read));
+    assert_eq!(current_rights_shared, Some(AccessRights::ReadWriteManage));
 
     let mut get_vetkey = |caller: Principal| -> Vec<u8> {
         let transport_key = random_transport_key(rng);

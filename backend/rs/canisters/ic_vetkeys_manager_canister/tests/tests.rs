@@ -99,6 +99,15 @@ fn key_sharing_should_work() {
     let not_key_owner = env.principal_1;
     let key_name = random_key_name(rng);
 
+    assert_eq!(
+        env.query::<Result<Option<AccessRights>, String>>(
+            not_key_owner,
+            "get_user_rights",
+            encode_args((key_owner, key_name.clone(), not_key_owner)).unwrap(),
+        ),
+        Err("unauthorized".to_string())
+    );
+
     let prev_rights = env
         .update::<Result<Option<AccessRights>, String>>(
             env.principal_0,
@@ -107,7 +116,7 @@ fn key_sharing_should_work() {
                 key_owner,
                 key_name.clone(),
                 env.principal_1,
-                AccessRights::Read,
+                AccessRights::ReadWriteManage,
             ))
             .unwrap(),
         )
@@ -130,7 +139,7 @@ fn key_sharing_should_work() {
             encode_args((key_owner, key_name.clone(), not_key_owner)).unwrap(),
         )
         .unwrap();
-    assert_eq!(current_rights_shared, Some(AccessRights::Read));
+    assert_eq!(current_rights_shared, Some(AccessRights::ReadWriteManage));
 
     let mut get_vetkey = |caller: Principal| -> Vec<u8> {
         let transport_key = random_transport_key(rng);
@@ -235,10 +244,13 @@ impl TestEnvironment {
 }
 
 fn load_key_manager_example_canister_wasm() -> Vec<u8> {
-    let wasm_path_string = format!(
-        "{}/target/wasm32-unknown-unknown/release/ic_vetkeys_manager_canister.wasm",
-        git_root_dir()
-    );
+    let wasm_path_string = match std::env::var("CUSTOM_WASM_PATH") {
+        Ok(path) if !path.is_empty() => path,
+        _ => format!(
+            "{}/target/wasm32-unknown-unknown/release/ic_vetkeys_manager_canister.wasm",
+            git_root_dir()
+        ),
+    };
     let wasm_path = Path::new(&wasm_path_string);
     let wasm_bytes = std::fs::read(wasm_path).expect(
 "wasm does not exist - run `cargo build --release --target wasm32-unknown-unknown --features expose-testing-api`",

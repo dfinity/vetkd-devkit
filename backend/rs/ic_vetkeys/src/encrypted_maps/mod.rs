@@ -92,10 +92,7 @@ impl<T: AccessControl> EncryptedMaps<T> {
         caller: Principal,
         key_id: KeyId,
     ) -> Result<Vec<MapKey>, String> {
-        match self.key_manager.get_user_rights(caller, key_id, caller)? {
-            Some(a) if a.can_write() => Ok(()),
-            Some(_) | None => Err("unauthorized".to_string()),
-        }?;
+        self.key_manager.ensure_user_can_write(caller, key_id)?;
 
         let keys: Vec<_> = self
             .mapkey_vals
@@ -117,7 +114,7 @@ impl<T: AccessControl> EncryptedMaps<T> {
         caller: Principal,
         key_id: KeyId,
     ) -> Result<Vec<(MapKey, EncryptedMapValue)>, String> {
-        self.key_manager.get_user_rights(caller, key_id, caller)?;
+        self.key_manager.ensure_user_can_read(caller, key_id)?;
 
         Ok(self
             .mapkey_vals
@@ -134,9 +131,8 @@ impl<T: AccessControl> EncryptedMaps<T> {
         key_id: KeyId,
         key: MapKey,
     ) -> Result<Option<EncryptedMapValue>, String> {
-        self.key_manager
-            .get_user_rights(caller, key_id, caller)
-            .map(|_| self.mapkey_vals.get(&(key_id, key)))
+        self.key_manager.ensure_user_can_read(caller, key_id)?;
+        Ok(self.mapkey_vals.get(&(key_id, key)))
     }
 
     /// Retrieves the non-empty map names owned by the caller.
@@ -205,11 +201,7 @@ impl<T: AccessControl> EncryptedMaps<T> {
         key: MapKey,
         encrypted_value: EncryptedMapValue,
     ) -> Result<Option<EncryptedMapValue>, String> {
-        match self.key_manager.get_user_rights(caller, key_id, caller)? {
-            Some(a) if a.can_write() => Ok(()),
-            Some(_) | None => Err("unauthorized".to_string()),
-        }?;
-
+        self.key_manager.ensure_user_can_write(caller, key_id)?;
         Ok(self.mapkey_vals.insert((key_id, key), encrypted_value))
     }
 
@@ -220,11 +212,7 @@ impl<T: AccessControl> EncryptedMaps<T> {
         key_id: KeyId,
         key: MapKey,
     ) -> Result<Option<EncryptedMapValue>, String> {
-        match self.key_manager.get_user_rights(caller, key_id, caller)? {
-            Some(a) if a.can_write() => Ok(()),
-            Some(_) | None => Err("unauthorized".to_string()),
-        }?;
-
+        self.key_manager.ensure_user_can_write(caller, key_id)?;
         Ok(self.mapkey_vals.remove(&(key_id, key)))
     }
 

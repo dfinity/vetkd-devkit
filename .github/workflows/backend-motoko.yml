@@ -30,6 +30,8 @@ jobs:
           cd backend/mo/ic_vetkeys
           mops install
           mops test
+          cd ../canisters/ic_vetkeys_manager_canister
+          make test
   backend-motoko-tests-darwin:
     runs-on: macos-15
     steps:
@@ -45,3 +47,5 @@ jobs:
           cd backend/mo/ic_vetkeys
           mops install
           mops test
+          cd ../canisters/ic_vetkeys_manager_canister
+          make test

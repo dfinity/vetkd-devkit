@@ -7,6 +7,7 @@ import OrderedMap "mo:base/OrderedMap";
 import Result "mo:base/Result";
 import Types "../Types";
 import Text "mo:base/Text";
+import Nat8 "mo:base/Nat8";
 
 module {
     public type VetKeyVerificationKey = Blob;
@@ -20,12 +21,12 @@ module {
         vetkd_public_key : ({
             canister_id : ?Principal;
             derivation_path : [Blob];
-            key_id : { curve : { #bls12_381_g2 }; name : Text };
+            key_id : { curve : { #bls12_381 }; name : Text };
         }) -> async ({ public_key : Blob });
-        vetkd_derive_encrypted_key : ({
-            derivation_path : [Blob];
+        vetkd_encrypted_key : ({
+            public_key_derivation_path : [Blob];
             derivation_id : Blob;
-            key_id : { curve : { #bls12_381_g2 }; name : Text };
+            key_id : { curve : { #bls12_381 }; name : Text };
             encryption_public_key : Blob;
         }) -> async ({ encrypted_key : Blob });
     };
@@ -51,7 +52,7 @@ module {
     public class KeyManager<T>(domainSeparator : Text, accessRightsOperations : Types.AccessControlOperations<T>) {
         public var accessControl : OrderedMap.Map<Principal, [(KeyId, T)]> = accessControlMapOps().empty();
         public var sharedKeys : OrderedMap.Map<KeyId, [Principal]> = sharedKeysMapOps().empty();
-        public var managementCanisterPrincipalText = "aaaaa-aa";
+        var managementCanisterPrincipalText = "aaaaa-aa";
         let domainSeparatorBytes = Text.encodeUtf8(domainSeparator);
 
         // Get accessible shared key IDs for a caller
@@ -115,8 +116,10 @@ module {
             switch (ensureUserCanRead(caller, keyId)) {
                 case (#err(msg)) { #err(msg) };
                 case (#ok(_)) {
+                    let principalBytes = Blob.toArray(Principal.toBlob(keyId.0));
                     let derivationId = Array.flatten<Nat8>([
-                        Blob.toArray(Principal.toBlob(keyId.0)),
+                        [Nat8.fromNat(Array.size<Nat8>(principalBytes))],
+                        principalBytes,
                         Blob.toArray(keyId.1),
                     ]);
 
@@ -124,12 +127,12 @@ module {
 
                     let request = {
                         derivation_id = Blob.fromArray(derivationId);
-                        derivation_path = derivationPath;
+                        public_key_derivation_path = derivationPath;
                         key_id = bls12_381TestKey1();
                         encryption_public_key = transportKey;
                     };
 
-                    let (reply) = await (actor (managementCanisterPrincipalText) : VetkdSystemApi).vetkd_derive_encrypted_key(request);
+                    let (reply) = await (actor (managementCanisterPrincipalText) : VetkdSystemApi).vetkd_encrypted_key(request);
                     #ok(reply.encrypted_key);
                 };
             };
@@ -293,6 +296,10 @@ module {
             };
         };
 
+        public func setVetKDTestingCanister(canister : Text) {
+            managementCanisterPrincipalText := canister;
+        };
+
         private func ensureUserCanGetUserRights(user : Principal, keyId : KeyId) : Result.Result<T, Text> {
             if (Principal.equal(user, keyId.0)) {
                 return #ok(accessRightsOperations.ownerRights());
@@ -339,7 +346,7 @@ module {
     };
 
     // Helper function for BLS12-381 test key
-    func bls12_381TestKey1() : { curve : { #bls12_381_g2 }; name : Text } {
-        { curve = #bls12_381_g2; name = "insecure_text_key_1" };
+    func bls12_381TestKey1() : { curve : { #bls12_381 }; name : Text } {
+        { curve = #bls12_381; name = "insecure_test_key_1" };
     };
 };
