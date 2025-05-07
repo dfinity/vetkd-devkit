@@ -493,7 +493,7 @@ function maskSeed(seed: Uint8Array, t: Uint8Array): Uint8Array {
 }
 
 function maskMsg(msg: Uint8Array, seed: Uint8Array): Uint8Array {
-    const domain_sep = IbeDomainSeparators.MaskMsg.concat(msg.length.toString());
+    const domain_sep = IbeDomainSeparators.MaskMsg.concat(msg.length.toString().padStart(20, "0"));
     const xof_seed = deriveSymmetricKey(seed, domain_sep, 32);
 
     const mask = shake256(xof_seed, { dkLen: msg.length });
