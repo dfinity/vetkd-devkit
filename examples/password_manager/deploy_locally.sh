@@ -16,6 +16,7 @@ dfx deps pull && dfx deps init && dfx deps deploy &&
 # Deploy the backend canister.
 pushd ../../backend/rs/canisters/ic_vetkeys_encrypted_maps_canister
     dfx deploy
+    export CANISTER_ID_IC_VETKEYS_ENCRYPTED_MAPS_CANISTER=$(dfx canister id ic_vetkeys_encrypted_maps_canister)
 popd
 
 # Store environment variables for the frontend.

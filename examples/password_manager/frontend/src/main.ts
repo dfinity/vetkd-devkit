@@ -1,3 +1,8 @@
+// Required to run `npm run dev`.
+if (!window.global) {
+    window.global = window;
+}
+
 import "./app.css";
 import App from "./App.svelte";
 

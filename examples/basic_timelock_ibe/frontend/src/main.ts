@@ -1,3 +1,8 @@
+// Required to run `npm run dev`.
+if (!window.global) {
+  window.global = window;
+}
+
 import "./style.css";
 import { createActor } from "../../src/declarations/basic_timelock_ibe";
 import { Principal } from "@dfinity/principal";
