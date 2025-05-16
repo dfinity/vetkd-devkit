@@ -297,10 +297,11 @@ async fn decrypt_bids(
         transport_public_key: transport_secret_key.public_key().to_vec(),
     };
 
-    let (result,) = ic_cdk::api::call::call::<_, (VetKDDeriveKeyReply,)>(
+    let (result,) = ic_cdk::api::call::call_with_payment128::<_, (VetKDDeriveKeyReply,)>(
         vetkd_system_api_canister_id(),
         "vetkd_derive_key",
         (request,),
+        26_153_846_153,
     )
     .await
     .expect("call to vetkd_derive_key failed");

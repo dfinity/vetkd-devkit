@@ -1,0 +1,52 @@
+name: examples-basic-bls-signing
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    paths:
+      - examples/basic_bls_signing/**
+      - backend/**
+      - Cargo.toml
+      - Cargo.lock
+      - frontend/ic_vetkeys/**
+      - package.json
+      - package-lock.json
+      - .github/workflows/provision-darwin.sh
+      - .github/workflows/provision-linux.sh
+      - .github/workflows/examples-basic-bls-signing.yml
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  examples-basic-bls-signing-darwin:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Provision Darwin
+        run: |
+          bash .github/workflows/provision-darwin.sh
+      - name: Deploy Basic BLS Signing Darwin
+        run: |
+          set -eExuo pipefail
+          cargo install candid-extractor
+          npm i
+          pushd examples/basic_bls_signing
+          ./deploy_locally.sh
+          cd frontend
+          npm run lint
+  examples-basic-bls-signing-linux:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Provision Linux
+        run: bash .github/workflows/provision-linux.sh
+      - name: Deploy Basic BLS Signing Linux
+        run: |
+          set -eExuo pipefail
+          cargo install candid-extractor
+          npm i
+          pushd examples/basic_bls_signing
+          ./deploy_locally.sh
+          cd frontend
+          npm run lint

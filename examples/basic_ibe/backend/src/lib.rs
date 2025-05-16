@@ -84,10 +84,11 @@ async fn get_my_encrypted_ibe_key(transport_key: TransportPublicKey) -> Encrypte
         transport_public_key: transport_key.into_vec(),
     };
 
-    let (result,) = ic_cdk::api::call::call::<_, (VetKDDeriveKeyReply,)>(
+    let (result,) = ic_cdk::api::call::call_with_payment128::<_, (VetKDDeriveKeyReply,)>(
         vetkd_system_api_canister_id(),
         "vetkd_derive_key",
         (request,),
+        26_153_846_153,
     )
     .await
     .expect("call to vetkd_derive_key failed");

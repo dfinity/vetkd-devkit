@@ -1,0 +1,12 @@
+type Signature = record {
+  signature : blob;
+  message : text;
+  timestamp : nat64;
+  signer : principal;
+};
+service : {
+  get_published_signatures : () -> (vec Signature) query;
+  get_root_public_key : () -> (blob);
+  publish_my_signature_no_verification : (text, blob) -> ();
+  sign_message : (text) -> (blob);
+}

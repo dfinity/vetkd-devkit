@@ -1,0 +1,32 @@
+{
+  "canisters": {
+    "basic_bls_signing": {
+      "candid": "backend/backend.did",
+      "package": "ic-vetkeys-example-basic-bls-signing-backend",
+      "type": "rust",
+      "metadata": [
+        {
+          "name": "candid:service",
+          "visibility": "public"
+        }
+      ]
+    },
+    "internet-identity": {
+      "type": "pull",
+      "id": "rdmx6-jaaaa-aaaaa-aaadq-cai"
+    },
+    "www": {
+      "frontend": {
+        "entrypoint": "frontend/dist/index.html"
+      },
+      "source": ["frontend/dist/"],
+      "type": "assets"
+    }
+  },
+  "networks": {
+    "local": {
+      "bind": "localhost:8000",
+      "type": "ephemeral"
+    }
+  }
+}
