@@ -13,7 +13,7 @@ This package contains three entry points:
 
 <br>
 
-[`ic_vetkeys`](https://5lfyp-mqaaa-aaaag-aleqa-cai.icp0.io/modules/ic_vetkeys.html)
+[`ic_vetkeys`](https://5lfyp-mqaaa-aaaag-aleqa-cai.icp0.io/modules/_dfinity_vetkeys.html)
 
 ---
 
@@ -21,7 +21,7 @@ Provides frontend utilities for the low-level use of VetKeys such as decryption 
 
 <br>
 
-[`ic_vetkeys/key_manager`](https://5lfyp-mqaaa-aaaag-aleqa-cai.icp0.io/modules/ic_vetkeys_key_manager.html)
+[`ic_vetkeys/key_manager`](https://5lfyp-mqaaa-aaaag-aleqa-cai.icp0.io/modules/_dfinity_vetkeys_key_manager.html)
 
 ---
 
@@ -29,7 +29,7 @@ A frontend library facilitating communication with a [key manager enabled canist
 
 <br>
 
-[`ic_vetkeys/encrypted_maps`](https://5lfyp-mqaaa-aaaag-aleqa-cai.icp0.io/modules/ic_vetkeys_encrypted_maps.html)
+[`ic_vetkeys/encrypted_maps`](https://5lfyp-mqaaa-aaaag-aleqa-cai.icp0.io/modules/_dfinity_vetkeys_encrypted_maps.html)
 
 ---
 

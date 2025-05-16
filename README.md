@@ -39,9 +39,9 @@ Tools to help canister developers integrate VetKeys into their Internet Computer
 
 Tools for frontend developers to interact with VetKD enabled canisters.
 
-- **[KeyManager](https://5lfyp-mqaaa-aaaag-aleqa-cai.icp0.io/classes/ic_vetkeys_tools.KeyManager.html)** – Facilitates interaction with a KeyManager-enabled canister.
-- **[EncryptedMaps](https://5lfyp-mqaaa-aaaag-aleqa-cai.icp0.io/classes/ic_vetkeys_tools.EncryptedMaps.html)** – Facilitates interaction with a EncryptedMaps-enabled canister.
-- **[Utils](https://5lfyp-mqaaa-aaaag-aleqa-cai.icp0.io/modules/ic_vetkeys.html)** – Utility functions for working with VetKeys.
+- **[KeyManager](https://5lfyp-mqaaa-aaaag-aleqa-cai.icp0.io/classes/_dfinity_vetkeys_key_manager.KeyManager.html)** – Facilitates interaction with a KeyManager-enabled canister.
+- **[EncryptedMaps](https://5lfyp-mqaaa-aaaag-aleqa-cai.icp0.io/classes/_dfinity_vetkeys_encrypted_maps.EncryptedMaps.html)** – Facilitates interaction with a EncryptedMaps-enabled canister.
+- **[Utils](https://5lfyp-mqaaa-aaaag-aleqa-cai.icp0.io/modules/_dfinity_vetkeys.html)** – Utility functions for working with VetKeys.
 
 ### **3. VetKeys Password Manager** - Example application
 
