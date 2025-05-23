@@ -6,7 +6,7 @@ type Result_1 = variant {
   Err : text;
 };
 type Result_2 = variant { Ok : opt AccessRights; Err : text };
-service : {
+service : (text) -> {
   get_accessible_shared_key_ids : () -> (
       vec record { principal; ByteBuf },
     ) query;

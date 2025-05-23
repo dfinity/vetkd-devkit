@@ -1,4 +1,4 @@
-import { KeyManager } "../../../ic_vetkeys/src";
+import IcVetkeys "../../../ic_vetkeys/src";
 import Types "../../../ic_vetkeys/src/Types";
 import Principal "mo:base/Principal";
 import Text "mo:base/Text";
@@ -6,8 +6,8 @@ import Blob "mo:base/Blob";
 import Result "mo:base/Result";
 import Array "mo:base/Array";
 
-actor {
-    var keyManager = KeyManager.KeyManager<Types.AccessRights>("key_manager", Types.accessRightsOperations());
+actor class (keyName : Text) {
+    var keyManager = IcVetkeys.KeyManager.KeyManager<Types.AccessRights>({ curve = #bls12_381_g2; name = keyName }, "key manager", Types.accessRightsOperations());
     /// In this canister, we use the `ByteBuf` type to represent blobs. The reason is that we want to be consistent with the Rust canister implementation.
     /// Unfortunately, the `Blob` type cannot be serialized/deserialized in the current Rust implementation efficiently without nesting it in another type.
     public type ByteBuf = { inner : Blob };

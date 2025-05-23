@@ -8,6 +8,7 @@ on:
   pull_request:
     paths:
       - backend/mo/**
+      - backend/rs/canisters/**
       - Cargo.toml
       - Cargo.lock
       - .github/workflows/provision-linux.sh

@@ -1,15 +1,15 @@
 use candid::CandidType;
-use candid::Deserialize;
 use ic_cdk::api::management_canister::main::CanisterId;
+use serde::{Deserialize, Serialize};
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub enum VetKDCurve {
     #[serde(rename = "bls12_381_g2")]
     #[allow(non_camel_case_types)]
     Bls12_381_G2,
 }
 
-#[derive(CandidType, Deserialize, Clone, Debug)]
+#[derive(CandidType, Serialize, Deserialize, Clone, Debug)]
 pub struct VetKDKeyId {
     pub curve: VetKDCurve,
     pub name: String,

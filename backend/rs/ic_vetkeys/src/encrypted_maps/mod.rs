@@ -10,6 +10,7 @@ use crate::key_manager::KeyId;
 use crate::types::{
     AccessControl, ByteBuf, EncryptedMapValue, MapId, MapKey, MapName, TransportKey,
 };
+use crate::vetkd_api_types::VetKDKeyId;
 
 pub type VetKeyVerificationKey = ByteBuf;
 pub type VetKey = ByteBuf;
@@ -17,7 +18,7 @@ pub type VetKey = ByteBuf;
 type Memory = VirtualMemory<DefaultMemoryImpl>;
 
 /// The **EncryptedMaps** backend is a support library built on top of [`crate::key_manager::KeyManager`].
-/// 
+///
 /// **EncryptedMaps** is designed to facilitate secure, encrypted data sharing between users on the Internet Computer (ICP) using the **vetKeys** feature. It allows developers to store encrypted key-value pairs (**maps**) securely and to manage fine-grained user access.
 ///
 /// For an introduction to **vetKeys**, refer to the [vetKeys Overview](https://internetcomputer.org/docs/building-apps/network-features/encryption/vetKeys).
@@ -68,10 +69,12 @@ impl<T: AccessControl> EncryptedMaps<T> {
     /// # Example
     ///
     /// ```rust
+    /// use ic_cdk::init;
     /// use ic_stable_structures::{
     ///     memory_manager::{MemoryId, MemoryManager, VirtualMemory},
     ///     DefaultMemoryImpl,
     /// };
+    /// use ic_vetkeys::vetkd_api_types::{VetKDCurve, VetKDKeyId};
     /// use std::cell::RefCell;
     /// use ic_vetkeys::types::AccessRights;
     /// use ic_vetkeys::encrypted_maps::EncryptedMaps;
@@ -81,13 +84,25 @@ impl<T: AccessControl> EncryptedMaps<T> {
     /// thread_local! {
     ///     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
     ///         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
-    ///     static ENCRYPTED_MAPS: RefCell<EncryptedMaps<AccessRights>> = RefCell::new(EncryptedMaps::init(
+    ///     static ENCRYPTED_MAPS: RefCell<Option<EncryptedMaps<AccessRights>>> = const { RefCell::new(None) };
+    /// }
+    ///
+    /// #[init]
+    /// fn init(key_name: String) {
+    ///     let key_id = VetKDKeyId {
+    ///         curve: VetKDCurve::Bls12_381_G2,
+    ///         name: key_name,
+    ///     };
+    ///     ENCRYPTED_MAPS.with_borrow_mut(|encrypted_maps| {
+    ///         encrypted_maps.replace(EncryptedMaps::init(
     ///         "my encrypted maps dapp",
+    ///         key_id,
     ///         id_to_memory(0),
     ///         id_to_memory(1),
     ///         id_to_memory(2),
-    ///         id_to_memory(3)
-    ///     ));
+    ///         id_to_memory(3),
+    ///         ));
+    ///     });
     /// }
     ///
     /// fn id_to_memory(id: u8) -> Memory {
@@ -96,6 +111,7 @@ impl<T: AccessControl> EncryptedMaps<T> {
     /// ```
     pub fn init(
         domain_separator: &str,
+        key_id: VetKDKeyId,
         memory_domain_separator: Memory,
         memory_access_control: Memory,
         memory_shared_keys: Memory,
@@ -103,6 +119,7 @@ impl<T: AccessControl> EncryptedMaps<T> {
     ) -> Self {
         let key_manager = crate::key_manager::KeyManager::init(
             domain_separator,
+            key_id,
             memory_domain_separator,
             memory_access_control,
             memory_shared_keys,

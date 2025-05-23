@@ -1,11 +1,10 @@
 use candid::Principal;
 use ic_cdk::api::management_canister::provisional::CanisterId;
-use ic_cdk::{query, update};
+use ic_cdk::{init, query, update};
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
-use ic_stable_structures::{BTreeMap as StableBTreeMap, DefaultMemoryImpl};
+use ic_stable_structures::{BTreeMap as StableBTreeMap, Cell as StableCell, DefaultMemoryImpl};
 use serde_bytes::ByteBuf;
 use std::cell::RefCell;
-use std::str::FromStr;
 
 mod types;
 use types::*;
@@ -21,10 +20,24 @@ thread_local! {
     static INBOXES: RefCell<StableBTreeMap<Principal, Inbox, Memory>> = RefCell::new(StableBTreeMap::init(
         MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(0))),
     ));
+    static KEY_NAME: RefCell<StableCell<String, Memory>> =
+        RefCell::new(StableCell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1))),
+            String::new(),
+        )
+        .expect("failed to initialize key name"));
 }
 
 static DOMAIN_SEPARATOR: &str = "basic_ibe_example_dapp";
-const CANISTER_ID_VETKD_SYSTEM_API: &str = "aaaaa-aa";
+
+#[init]
+fn init(key_name_string: String) {
+    KEY_NAME.with_borrow_mut(|key_name| {
+        key_name
+            .set(key_name_string)
+            .expect("failed to set key name");
+    });
+}
 
 #[update]
 fn send_message(request: SendMessageRequest) -> Result<(), String> {
@@ -63,7 +76,7 @@ async fn get_root_ibe_public_key() -> VetKeyPublicKey {
     };
 
     let (result,) = ic_cdk::api::call::call::<_, (VetKDPublicKeyReply,)>(
-        vetkd_system_api_canister_id(),
+        CanisterId::management_canister(),
         "vetkd_public_key",
         (request,),
     )
@@ -85,7 +98,7 @@ async fn get_my_encrypted_ibe_key(transport_key: TransportPublicKey) -> Encrypte
     };
 
     let (result,) = ic_cdk::api::call::call_with_payment128::<_, (VetKDDeriveKeyReply,)>(
-        vetkd_system_api_canister_id(),
+        CanisterId::management_canister(),
         "vetkd_derive_key",
         (request,),
         26_153_846_153,
@@ -122,10 +135,6 @@ fn bls12_381_dfx_test_key() -> VetKDKeyId {
         curve: VetKDCurve::Bls12_381_G2,
         name: "dfx_test_key".to_string(),
     }
-}
-
-fn vetkd_system_api_canister_id() -> CanisterId {
-    CanisterId::from_str(CANISTER_ID_VETKD_SYSTEM_API).expect("failed to create canister ID")
 }
 
 ic_cdk::export_candid!();

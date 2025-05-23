@@ -1,5 +1,4 @@
 #![doc = include_str!("../README.md")]
-
 #![warn(future_incompatible)]
 
 pub mod encrypted_maps;

@@ -15,6 +15,24 @@ pub type MapKey = Blob<32>;
 pub type TransportKey = ByteBuf;
 pub type EncryptedMapValue = ByteBuf;
 
+#[derive(Serialize, Deserialize)]
+pub struct KeyManagerConfig {
+    pub domain_separator: String,
+    pub key_id: crate::vetkd_api_types::VetKDKeyId,
+}
+
+impl Storable for KeyManagerConfig {
+    fn to_bytes(&self) -> Cow<[u8]> {
+        Cow::Owned(serde_cbor::to_vec(self).unwrap())
+    }
+
+    fn from_bytes(bytes: Cow<[u8]>) -> Self {
+        serde_cbor::from_slice(bytes.as_ref()).unwrap()
+    }
+
+    const BOUND: Bound = Bound::Unbounded;
+}
+
 /// Access rights of a user to a vetKey in [`crate::key_manager::KeyManager`] and/or an encrypted map in [`crate::encrypted_maps::EncryptedMaps`].
 #[repr(u8)]
 #[derive(

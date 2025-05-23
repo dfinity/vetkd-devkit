@@ -5,8 +5,11 @@ use ic_stable_structures::{
     memory_manager::{MemoryId, MemoryManager},
     DefaultMemoryImpl,
 };
-use ic_vetkeys::key_manager::KeyManager;
 use ic_vetkeys::types::AccessRights;
+use ic_vetkeys::{
+    key_manager::KeyManager,
+    vetkd_api_types::{VetKDCurve, VetKDKeyId},
+};
 use ic_vetkeys_test_utils::{
     random_access_rights, random_name, random_self_authenticating_principal,
     random_unique_memory_ids, random_utf8_string, reproducible_rng,
@@ -244,12 +247,14 @@ fn can_instantiate_two_key_managers() {
     let memory_manager = MemoryManager::init(DefaultMemoryImpl::default());
     let key_manager_1 = KeyManager::<AccessRights>::init(
         "key_manager_1",
+        bls12_381_dfx_test_key(),
         memory_manager.get(MemoryId::new(0)),
         memory_manager.get(MemoryId::new(1)),
         memory_manager.get(MemoryId::new(2)),
     );
     let key_manager_2 = KeyManager::<AccessRights>::init(
         "key_manager_2",
+        bls12_381_dfx_test_key(),
         memory_manager.get(MemoryId::new(3)),
         memory_manager.get(MemoryId::new(4)),
         memory_manager.get(MemoryId::new(5)),
@@ -264,8 +269,16 @@ fn random_key_manager<R: Rng + CryptoRng>(rng: &mut R) -> KeyManager<AccessRight
     let domain_separator_len = rng.gen_range(0..32);
     KeyManager::<AccessRights>::init(
         &random_utf8_string(rng, domain_separator_len),
+        bls12_381_dfx_test_key(),
         memory_manager.get(MemoryId::new(memory_ids_key_manager[0])),
         memory_manager.get(MemoryId::new(memory_ids_key_manager[1])),
         memory_manager.get(MemoryId::new(memory_ids_key_manager[2])),
     )
+}
+
+fn bls12_381_dfx_test_key() -> VetKDKeyId {
+    VetKDKeyId {
+        curve: VetKDCurve::Bls12_381_G2,
+        name: "dfx_test_key".to_string(),
+    }
 }

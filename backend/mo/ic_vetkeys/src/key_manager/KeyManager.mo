@@ -49,7 +49,7 @@ module {
     };
 
     // KeyManager class
-    public class KeyManager<T>(domainSeparator : Text, accessRightsOperations : Types.AccessControlOperations<T>) {
+    public class KeyManager<T>(key_id : { curve : { #bls12_381_g2 }; name : Text }, domainSeparator : Text, accessRightsOperations : Types.AccessControlOperations<T>) {
         public var accessControl : OrderedMap.Map<Principal, [(KeyId, T)]> = accessControlMapOps().empty();
         public var sharedKeys : OrderedMap.Map<KeyId, [Principal]> = sharedKeysMapOps().empty();
         let domainSeparatorBytes = Text.encodeUtf8(domainSeparator);
@@ -103,7 +103,7 @@ module {
             let request = {
                 canister_id = null;
                 context;
-                key_id = bls12_381TestKey1();
+                key_id;
             };
 
             let (reply) = await (actor ("aaaaa-aa") : VetkdSystemApi).vetkd_public_key(request);
@@ -127,7 +127,7 @@ module {
                     let request = {
                         input = Blob.fromArray(input);
                         context;
-                        key_id = bls12_381TestKey1();
+                        key_id;
                         transport_public_key = transportKey;
                     };
 
@@ -338,10 +338,5 @@ module {
                 };
             };
         };
-    };
-
-    // Helper function for BLS12-381 test key
-    func bls12_381TestKey1() : { curve : { #bls12_381_g2 }; name : Text } {
-        { curve = #bls12_381_g2; name = "dfx_test_key" };
     };
 };

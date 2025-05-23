@@ -1,6 +1,6 @@
 //! See [`KeyManager`] for the main documentation.
 
-use crate::types::{AccessControl, ByteBuf, KeyName, TransportKey};
+use crate::types::{AccessControl, ByteBuf, KeyManagerConfig, KeyName, TransportKey};
 use candid::Principal;
 use ic_cdk::api::management_canister::main::CanisterId;
 use ic_stable_structures::memory_manager::VirtualMemory;
@@ -10,7 +10,7 @@ use std::future::Future;
 use std::str::FromStr;
 
 use crate::vetkd_api_types::{
-    VetKDCurve, VetKDDeriveKeyReply, VetKDDeriveKeyRequest, VetKDKeyId, VetKDPublicKeyReply,
+    VetKDDeriveKeyReply, VetKDDeriveKeyRequest, VetKDKeyId, VetKDPublicKeyReply,
     VetKDPublicKeyRequest,
 };
 
@@ -25,7 +25,7 @@ pub type KeyId = (Owner, KeyName);
 type Memory = VirtualMemory<DefaultMemoryImpl>;
 
 /// The **KeyManager** backend is a support library for **vetKeys**.
-/// 
+///
 /// **vetKeys** is a feature of the Internet Computer (ICP) that enables the derivation of **encrypted cryptographic keys**. This library simplifies the process of key retrieval, encryption, and controlled sharing, ensuring secure and efficient key management for canisters and users.
 ///
 /// For an introduction to **vetKeys**, refer to the [vetKeys Overview](https://internetcomputer.org/docs/building-apps/network-features/encryption/vetkeys).
@@ -33,7 +33,7 @@ type Memory = VirtualMemory<DefaultMemoryImpl>;
 /// IMPORTANT:
 /// These support libraries are under active development and are subject to change. Access to the repositories has been opened to allow for early feedback. Check back regularly for updates.
 /// Please share your feedback on the [developer forum](https://forum.dfinity.org/t/threshold-key-derivation-privacy-on-the-ic/16560/179).
-/// 
+///
 /// ## Core Features
 ///
 /// The **KeyManager** support library provides the following core functionalities:
@@ -63,11 +63,11 @@ type Memory = VirtualMemory<DefaultMemoryImpl>;
 /// - Only authorized users can access shared vetKeys.
 /// - Stable storage ensures vetKeys persist across canister upgrades.
 /// - Access control logic ensures only authorized users retrieve vetKeys or modify access rights.
-/// 
+///
 /// ## Summary
 /// [`KeyManager`] simplifies the usage of **vetKeys** on the ICP, providing a secure and efficient mechanism for **cryptographic key derivation, sharing, and management**.
 pub struct KeyManager<T: AccessControl> {
-    pub domain_separator: StableCell<String, Memory>,
+    pub config: StableCell<KeyManagerConfig, Memory>,
     pub access_control: StableBTreeMap<(Principal, KeyId), T, Memory>,
     pub shared_keys: StableBTreeMap<(KeyId, Principal), (), Memory>,
 }
@@ -78,12 +78,14 @@ impl<T: AccessControl> KeyManager<T> {
     /// # Example
     ///
     /// ```rust
+    /// use ic_cdk::init;
     /// use ic_stable_structures::{
     ///     memory_manager::{MemoryId, MemoryManager, VirtualMemory},
     ///     DefaultMemoryImpl,
     /// };
     /// use ic_vetkeys::types::AccessRights;
     /// use ic_vetkeys::key_manager::KeyManager;
+    /// use ic_vetkeys::vetkd_api_types::{VetKDCurve, VetKDKeyId};
     /// use std::cell::RefCell;
     ///
     /// type Memory = VirtualMemory<DefaultMemoryImpl>;
@@ -91,24 +93,47 @@ impl<T: AccessControl> KeyManager<T> {
     /// thread_local! {
     ///     static MEMORY_MANAGER: RefCell<MemoryManager<DefaultMemoryImpl>> =
     ///         RefCell::new(MemoryManager::init(DefaultMemoryImpl::default()));
-    ///     static KEY_MANAGER: RefCell<KeyManager<AccessRights>> = RefCell::new(KeyManager::init("my key manager dapp", id_to_memory(0), id_to_memory(1), id_to_memory(2)));
+    ///     static KEY_MANAGER: RefCell<Option<KeyManager<AccessRights>>> = const { RefCell::new(None) };
     /// }
-    /// 
+    ///
+    /// #[init]
+    /// fn init(key_name: String) {
+    ///     let key_id = VetKDKeyId {
+    ///         curve: VetKDCurve::Bls12_381_G2,
+    ///         name: key_name,
+    ///     };
+    ///     KEY_MANAGER.with_borrow_mut(|km| {
+    ///         km.replace(KeyManager::init(
+    ///             "key_manager_dapp",
+    ///             key_id,
+    ///             id_to_memory(0),
+    ///             id_to_memory(1),
+    ///             id_to_memory(2),
+    ///         ))
+    ///     });
+    /// }
+    ///
     /// fn id_to_memory(id: u8) -> Memory {
     ///     MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(id)))
     /// }
     /// ```
     pub fn init(
         domain_separator: &str,
-        memory_domain_separator: Memory,
+        key_id: VetKDKeyId,
+        memory_key_manager_config: Memory,
         memory_access_control: Memory,
         memory_shared_keys: Memory,
     ) -> Self {
-        let domain_separator =
-            StableCell::init(memory_domain_separator, domain_separator.to_string())
-                .expect("failed to initialize domain separator");
+        let config = StableCell::init(
+            memory_key_manager_config,
+            KeyManagerConfig {
+                domain_separator: domain_separator.to_string(),
+                key_id: key_id.clone(),
+            },
+        )
+        .expect("failed to initialize key manager config");
         KeyManager {
-            domain_separator,
+            config,
             access_control: StableBTreeMap::init(memory_access_control),
             shared_keys: StableBTreeMap::init(memory_shared_keys),
         }
@@ -160,8 +185,8 @@ impl<T: AccessControl> KeyManager<T> {
 
         let request = VetKDPublicKeyRequest {
             canister_id: None,
-            context: self.domain_separator.get().to_bytes().to_vec(),
-            key_id: bls12_381_dfx_test_key(),
+            context: self.config.get().domain_separator.to_bytes().to_vec(),
+            key_id: self.config.get().key_id.clone(),
         };
 
         let future = ic_cdk::api::call::call::<_, (VetKDPublicKeyReply,)>(
@@ -191,8 +216,8 @@ impl<T: AccessControl> KeyManager<T> {
 
         let request = VetKDDeriveKeyRequest {
             input: key_id_to_vetkd_input(key_id.0, key_id.1.as_ref()),
-            context: self.domain_separator.get().to_bytes().to_vec(),
-            key_id: bls12_381_dfx_test_key(),
+            context: self.config.get().domain_separator.to_bytes().to_vec(),
+            key_id: self.config.get().key_id.clone(),
             transport_public_key: transport_key.into(),
         };
 
@@ -325,13 +350,6 @@ impl<T: AccessControl> KeyManager<T> {
             Some(access_rights) if access_rights.can_set_user_rights() => Ok(access_rights),
             _ => Err("unauthorized".to_string()),
         }
-    }
-}
-
-fn bls12_381_dfx_test_key() -> VetKDKeyId {
-    VetKDKeyId {
-        curve: VetKDCurve::Bls12_381_G2,
-        name: "dfx_test_key".to_string(),
     }
 }
 

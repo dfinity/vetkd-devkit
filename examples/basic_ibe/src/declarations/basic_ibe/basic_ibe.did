@@ -9,7 +9,7 @@ type SendMessageRequest = record {
   encrypted_message : blob;
   receiver : principal;
 };
-service : {
+service : (text) -> {
   get_my_encrypted_ibe_key : (blob) -> (blob);
   get_my_messages : () -> (Inbox) query;
   get_root_ibe_public_key : () -> (blob);

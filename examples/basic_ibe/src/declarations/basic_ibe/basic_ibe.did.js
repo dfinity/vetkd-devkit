@@ -22,4 +22,4 @@ export const idlFactory = ({ IDL }) => {
     'send_message' : IDL.Func([SendMessageRequest], [Result], []),
   });
 };
-export const init = ({ IDL }) => { return []; };
+export const init = ({ IDL }) => { return [IDL.Text]; };

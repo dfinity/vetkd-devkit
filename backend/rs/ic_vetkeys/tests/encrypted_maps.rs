@@ -15,8 +15,11 @@ use ic_vetkeys_test_utils::{
 use rand::{CryptoRng, Rng};
 use strum::IntoEnumIterator;
 
-use ic_vetkeys::encrypted_maps::EncryptedMaps;
 use ic_vetkeys::types::{AccessControl, AccessRights};
+use ic_vetkeys::{
+    encrypted_maps::EncryptedMaps,
+    vetkd_api_types::{VetKDCurve, VetKDKeyId},
+};
 
 #[test]
 fn can_init_memory() {
@@ -501,9 +504,17 @@ fn random_encrypted_maps<R: Rng + CryptoRng>(rng: &mut R) -> EncryptedMaps<Acces
     let domain_separator_len = rng.gen_range(0..32);
     EncryptedMaps::init(
         &random_utf8_string(rng, domain_separator_len),
+        bls12_381_dfx_test_key(),
         memory_manager.get(MemoryId::new(memory_id_encrypted_maps)),
         memory_manager.get(MemoryId::new(memory_ids_key_manager[0])),
         memory_manager.get(MemoryId::new(memory_ids_key_manager[1])),
         memory_manager.get(MemoryId::new(memory_ids_key_manager[2])),
     )
+}
+
+fn bls12_381_dfx_test_key() -> VetKDKeyId {
+    VetKDKeyId {
+        curve: VetKDCurve::Bls12_381_G2,
+        name: "dfx_test_key".to_string(),
+    }
 }

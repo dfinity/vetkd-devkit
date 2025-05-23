@@ -18,7 +18,7 @@ type OpenLotsResponse = record {
 };
 type Result = variant { Ok : nat; Err : text };
 type Result_1 = variant { Ok; Err : text };
-service : () -> {
+service : (text) -> {
   create_lot : (text, text, nat16) -> (Result);
   get_lots : () -> (OpenLotsResponse, ClosedLotsResponse) query;
   get_root_ibe_public_key : () -> (blob);

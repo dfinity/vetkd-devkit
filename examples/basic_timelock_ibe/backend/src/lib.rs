@@ -5,7 +5,7 @@ use candid::Principal;
 use ic_cdk::api::management_canister::provisional::CanisterId;
 use ic_cdk::{init, post_upgrade, query, update};
 use ic_stable_structures::memory_manager::{MemoryId, MemoryManager, VirtualMemory};
-use ic_stable_structures::{BTreeMap as StableBTreeMap, DefaultMemoryImpl};
+use ic_stable_structures::{BTreeMap as StableBTreeMap, Cell as StableCell, DefaultMemoryImpl};
 use ic_vetkeys::{DerivedPublicKey, EncryptedVetKey};
 use std::cell::RefCell;
 use std::str::FromStr;
@@ -34,13 +34,26 @@ thread_local! {
     static VETKD_ROOT_IBE_PUBLIC_KEY: RefCell<Option<VetKeyPublicKey>> =  const { RefCell::new(None) };
 
     static BID_COUNTER: RefCell<BidCounter> = const { RefCell::new(0) };
+
+    static KEY_NAME: RefCell<StableCell<String, Memory>> =
+        RefCell::new(StableCell::init(
+            MEMORY_MANAGER.with(|m| m.borrow().get(MemoryId::new(1))),
+            String::new(),
+        )
+        .expect("failed to initialize key name"));
 }
 
 const DOMAIN_SEPARATOR: &str = "basic_timelock_ibe_example_dapp";
 const CANISTER_ID_VETKD_SYSTEM_API: &str = "aaaaa-aa";
 
 #[init]
-fn init() {
+fn init(key_name_string: String) {
+    KEY_NAME.with_borrow_mut(|key_name| {
+        key_name
+            .set(key_name_string)
+            .expect("failed to set key name");
+    });
+
     start_with_interval_secs(5);
 }
 

@@ -88,7 +88,7 @@
         "test_utils": "vitest utils",
         "test": "npm run test:deploy_all && export $(cat .test1.env .test2.env | xargs) && vitest",
         "test:deploy_all": "npm run test:deploy_key_manager_canister && npm run test:deploy_encrypted_maps_canister",
-        "test:deploy_key_manager_canister": "cd $(git rev-parse --show-toplevel)/backend/rs/canisters/ic_vetkeys_manager_canister && dfx start --clean --background; dfx deploy && grep CANISTER_ID .env > $(git rev-parse --show-toplevel)/frontend/ic_vetkeys/.test1.env",
-        "test:deploy_encrypted_maps_canister": "cd $(git rev-parse --show-toplevel)/backend/rs/canisters/ic_vetkeys_encrypted_maps_canister && dfx start --clean --background; dfx deploy && grep CANISTER_ID .env > $(git rev-parse --show-toplevel)/frontend/ic_vetkeys/.test2.env"
+        "test:deploy_key_manager_canister": "cd $(git rev-parse --show-toplevel)/backend/rs/canisters/ic_vetkeys_manager_canister && dfx start --clean --background; dfx deploy --argument '(\"dfx_test_key\")' ic_vetkeys_manager_canister && grep CANISTER_ID .env > $(git rev-parse --show-toplevel)/frontend/ic_vetkeys/.test1.env",
+        "test:deploy_encrypted_maps_canister": "cd $(git rev-parse --show-toplevel)/backend/rs/canisters/ic_vetkeys_encrypted_maps_canister && dfx start --clean --background; dfx deploy --argument '(\"dfx_test_key\")' ic_vetkeys_encrypted_maps_canister && grep CANISTER_ID .env > $(git rev-parse --show-toplevel)/frontend/ic_vetkeys/.test2.env"
     }
 }

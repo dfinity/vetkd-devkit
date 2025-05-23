@@ -14,6 +14,7 @@ dfx deps pull && dfx deps init && dfx deps deploy &&
     export CANISTER_ID_INTERNET_IDENTITY=rdmx6-jaaaa-aaaaa-aaadq-cai
 
 dfx canister create password_manager_with_metadata
+dfx deploy --argument '("dfx_test_key")' password_manager_with_metadata
 
 # Store environment variables for the frontend.
 echo "DFX_NETWORK=$DFX_NETWORK" > frontend/.env

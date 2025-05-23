@@ -35,4 +35,4 @@ export const idlFactory = ({ IDL }) => {
     'start_with_interval_secs' : IDL.Func([IDL.Nat64], [], []),
   });
 };
-export const init = ({ IDL }) => { return []; };
+export const init = ({ IDL }) => { return [IDL.Text]; };

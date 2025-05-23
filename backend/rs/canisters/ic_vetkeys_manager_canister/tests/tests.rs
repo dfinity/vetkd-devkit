@@ -187,7 +187,12 @@ impl TestEnvironment {
         pic.add_cycles(example_canister_id, 2_000_000_000_000);
 
         let example_wasm_bytes = load_key_manager_example_canister_wasm();
-        pic.install_canister(example_canister_id, example_wasm_bytes, vec![], None);
+        pic.install_canister(
+            example_canister_id,
+            example_wasm_bytes,
+            encode_one("dfx_test_key").unwrap(),
+            None,
+        );
 
         // Make sure the canister is properly initialized
         fast_forward(&pic, 5);

@@ -22,7 +22,7 @@ type Result_4 = variant {
   Ok : opt record { ByteBuf; PasswordMetadata };
   Err : text;
 };
-service : {
+service : (text) -> {
   get_accessible_shared_map_names : () -> (
       vec record { principal; ByteBuf },
     ) query;

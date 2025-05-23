@@ -14,6 +14,7 @@ dfx deps pull && dfx deps init && dfx deps deploy &&
     export CANISTER_ID_INTERNET_IDENTITY=rdmx6-jaaaa-aaaaa-aaadq-cai
 
 dfx canister create basic_ibe
+dfx deploy --argument '("dfx_test_key")' basic_ibe
 
 # Store environment variables for the frontend.
 echo "DFX_NETWORK=$DFX_NETWORK" > frontend/.env
