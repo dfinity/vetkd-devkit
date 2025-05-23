@@ -7,6 +7,8 @@ use ic_stable_structures::{
 };
 use serde::{Deserialize, Serialize};
 
+pub type CanisterId = candid::Principal;
+
 pub type KeyName = Blob<32>;
 pub type MapName = KeyName;
 pub type MapId = KeyId;

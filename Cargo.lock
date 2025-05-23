@@ -1312,6 +1312,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "ic-vetkeys-canisters-tests"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "ic-cdk",
+ "ic-cdk-macros",
+ "ic-dummy-getrandom-for-wasm",
+ "ic-vetkeys",
+ "ic-vetkeys-test-utils",
+ "pocket-ic",
+ "rand 0.8.5",
+ "serde",
+]
+
+[[package]]
 name = "ic-vetkeys-encrypted-maps-canister"
 version = "0.1.0"
 dependencies = [
