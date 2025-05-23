@@ -24,11 +24,16 @@ const G1AFFINE_BYTES: usize = 48; // Size of compressed form
 const G2AFFINE_BYTES: usize = 96; // Size of compressed form
 
 /// Derive a symmetric key using HKDF-SHA256
-pub fn derive_symmetric_key(input: &[u8], domain_sep: &str, len: usize) -> Vec<u8> {
+pub fn hkdf(okm: &mut [u8], input: &[u8], domain_sep: &str) {
     let hk = hkdf::Hkdf::<sha2::Sha256>::new(None, input);
-    let mut okm = vec![0u8; len];
-    hk.expand(domain_sep.as_bytes(), &mut okm)
+    hk.expand(domain_sep.as_bytes(), okm)
         .expect("Unsupported output length for HKDF");
+}
+
+/// Derive a symmetric key using HKDF-SHA256
+pub fn derive_symmetric_key(input: &[u8], domain_sep: &str, len: usize) -> Vec<u8> {
+    let mut okm = vec![0u8; len];
+    hkdf(&mut okm, input, domain_sep);
     okm
 }
 
@@ -44,6 +49,11 @@ fn hash_to_scalar(input: &[u8], domain_sep: &str) -> ic_bls12_381::Scalar {
     s[0]
 }
 
+fn extend_with_length_prefix(vec: &mut Vec<u8>, data: &[u8]) {
+    vec.extend_from_slice(&(data.len() as u64).to_be_bytes());
+    vec.extend(data);
+}
+
 fn hash_to_scalar_two_inputs(
     input1: &[u8],
     input2: &[u8],
@@ -51,10 +61,8 @@ fn hash_to_scalar_two_inputs(
 ) -> ic_bls12_381::Scalar {
     let combined_input = {
         let mut c = Vec::with_capacity(2 * 8 + input1.len() + input2.len());
-        c.extend_from_slice(&(input1.len() as u64).to_be_bytes());
-        c.extend_from_slice(input1);
-        c.extend_from_slice(&(input2.len() as u64).to_be_bytes());
-        c.extend_from_slice(input2);
+        extend_with_length_prefix(&mut c, input1);
+        extend_with_length_prefix(&mut c, input2);
         c
     };
 
@@ -670,6 +678,98 @@ impl IbeCiphertext {
         } else {
             Err("decryption failed".to_string())
         }
+    }
+}
+
+/// An error occured while decoding or checking a VrfOutput
+pub enum InvalidVrfOutput {
+    /// The serialization seems to be incorrect
+    UnexpectedLength,
+    /// The VRF proof was invalid
+    InvalidProof,
+}
+
+/// Verifiable Random Function (VRF) Output
+///
+/// The VetKD protocol can be used to instantiate a verifiable random
+/// function, such that any user can check that the output was created
+/// correctly
+///
+#[derive(Eq, PartialEq)]
+pub struct VrfOutput {
+    proof: G1Affine,
+    dpk: DerivedPublicKey,
+    vrf_output: [u8; Self::VRF_BYTES],
+    vrf_input: Vec<u8>,
+}
+
+impl VrfOutput {
+    /// The size of the hashed VRF
+    pub const VRF_BYTES: usize = 64;
+
+    /// Create a new VrfOutput from a VetKey
+    ///
+    /// The provided input and derived public key must be the same values
+    /// which were used to create the VetKey. This is not verified by this
+    /// constructor, but if it does not hold the VrfOutput will be invalid.
+    pub fn create(vetkey: &VetKey, input: &[u8], dpk: &DerivedPublicKey) -> Self {
+
+        /*
+        We instantiate the VRF by hashing with HKDF the prefix-free concatenation of
+
+        - The vetKey (ie the BLS signature)
+        - The compressed serialization of the derived public key
+        - The input that was used to construct the signature
+
+        Strictly speaking only the vetKey itself is required but binding all available
+        context is generally considered a good practice.
+         */
+        let mut ro_input = Vec::with_capacity(Self::VRF_BYTES + G1AFFINE_BYTES + G2AFFINE_BYTES + input.len() + 4 * 8);
+        extend_with_length_prefix(&mut ro_input, &vetkey.pt_bytes);
+        extend_with_length_prefix(&mut ro_input, &dpk.serialize());
+        extend_with_length_prefix(&mut ro_input, input);
+
+        let mut vrf_output = [0u8; 64];
+        hkdf(&mut vrf_output, &ro_input, "ic-vetkd-bls12-381-g2-vrf");
+
+        Self {
+            proof: vetkey.pt,
+            dpk: dpk.clone(),
+            vrf_output,
+            vrf_input: input.to_vec(),
+        }
+    }
+
+    /// Serialize the VrfOutput
+    pub fn serialize(&self) -> Vec<u8> {
+        // Note that we do not include the VRF output here - instead we rederive it
+        //
+        // The first two outputs are fixed length so the encoding here is unambigious
+        let mut output = vec![];
+        output.extend_from_slice(&self.proof.to_compressed());
+        output.extend_from_slice(&self.dpk.serialize());
+        output.extend_from_slice(&self.vrf_input);
+        output
+    }
+
+    /// Deserialize and verify a VrfOutput
+    pub fn deserialize(bytes: &[u8]) -> Result<Self, InvalidVrfOutput> {
+        todo!();
+    }
+
+    /// Return the input that was used to create this VRF output
+    pub fn input(&self) -> &[u8] {
+        &self.vrf_input
+    }
+
+    /// Return the key under which this VRF output was derived
+    pub fn public_key(&self) -> &DerivedPublicKey {
+        &self.dpk
+    }
+
+    /// Return the VRF output
+    pub fn output(&self) -> &[u8; Self::VRF_BYTES] {
+        &self.vrf_output
     }
 }
 
