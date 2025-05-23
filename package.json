@@ -2,7 +2,9 @@
     "private": true,
     "workspaces": [
         "frontend/ic_vetkeys",
+        "examples/basic_bls_signing/frontend",
         "examples/basic_ibe/frontend",
+        "examples/basic_timelock_ibe/frontend",
         "examples/password_manager/frontend",
         "examples/password_manager_with_metadata/frontend"
     ],

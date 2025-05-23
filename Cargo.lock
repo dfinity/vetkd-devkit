@@ -1330,6 +1330,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "ic-vetkeys-example-basic-bls-signing-backend"
+version = "0.1.0"
+dependencies = [
+ "candid",
+ "getrandom 0.2.15",
+ "ic-cdk",
+ "ic-stable-structures",
+ "ic-vetkd-utils",
+ "serde",
+ "serde_bytes",
+ "serde_cbor",
+]
+
+[[package]]
 name = "ic-vetkeys-manager-canister"
 version = "0.1.0"
 dependencies = [

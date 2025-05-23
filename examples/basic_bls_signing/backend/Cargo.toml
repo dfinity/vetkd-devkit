@@ -1,0 +1,22 @@
+[package]
+name = "ic-vetkeys-example-basic-bls-signing-backend"
+authors.workspace = true
+description.workspace = true
+documentation.workspace = true
+edition.workspace = true
+version.workspace = true
+license.workspace = true
+
+[lib]
+path = "src/lib.rs"
+crate-type = ["cdylib"]
+
+[dependencies]
+candid = { workspace = true }
+getrandom = { version = "0.2", features = ["custom"]}
+ic-cdk = { workspace = true }
+ic-stable-structures = { workspace = true }
+ic-vetkd-utils = { version = "0.1.0", git = "https://github.com/dfinity/ic.git", default-features = false }
+serde = { workspace = true }
+serde_bytes = { workspace = true }
+serde_cbor = { workspace = true }
